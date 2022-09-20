@@ -9,7 +9,7 @@
 // #else
 // 	#include <map.hpp>
 // 	#include <stack.hpp>
-// 	#include <vector.hpp>
+	// #include <vector.hpp>
 // #endif
 
 // #include <stdlib.h>
@@ -117,13 +117,31 @@
 #include "vector.hpp"
 
 int main(){
-	std::vector<int> a(5, 1);
+	// ft::vector<int> a(10, 1);
 	// std::cout << a.size() << std::endl;
 	// std::cout << a.capacity() << std::endl;
 	// std::cout << a.empty() << std::endl;
-	// std::vector<int> b(15, 1);
+	// ft::vector<int> b(0);
 	// a = b;
-	a.i
-	std::cout << a.capacity() << std::endl;
+	// std::cout << a.capacity() << std::endl;
+	// ft::vector<int>::iterator ptr1 = a.begin();
+	// std::cout << *ptr1 << std::endl;
+	// a.insert(2, 1);
+	// a.insert(3, 2);
+	// ptr1++;
+	// std::cout << ptr1[1] << std::endl;
+	// std::cout << ptr1[2] << std::endl;
+
+	ft::vector<int> v1(10, 5);
+	ft::vector<int>::iterator it_begin = v1.begin();
+	ft::vector<int>::iterator it_end = v1.end();
+	for (ft::vector<int>::iterator i = it_begin; i != it_end; i++)
+	{
+		std::cout << *it_begin << "\n";
+	}
+	// std::vector<int> a1(19, 5);
+	// std::vector<int>::iterator atd = a1.begin();
+	
+
 	return 0;
 }
