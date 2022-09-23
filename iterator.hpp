@@ -79,7 +79,7 @@ namespace ft{
 			iterator_type	r_iter;
 		public:
 			reverse_iterator():r_iter(){};
-			reverse_iterator(iterator_type &other):r_iter(other){};
+			reverse_iterator(iterator_type other):r_iter(other){};
 			template <class Iterat>
 			reverse_iterator (const reverse_iterator<Iterat>& other){
 				r_iter = other.r_iter;
