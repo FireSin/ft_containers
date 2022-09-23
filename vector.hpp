@@ -9,15 +9,18 @@ namespace ft{
 	class vector
 	{
 	public:
-		typedef				T					value_type;
-		typedef				Allocator			allocator_type;
-		typedef typename	std::size_t			size_type;
-		typedef typename	std::ptrdiff_t		difference_type;
-		typedef				value_type&			reference;
-		typedef				const value_type&	const_reference;
-		typedef				value_type*			pointer;
-		typedef				const value_type*	const_pointer;
-		typedef				ft::vectorIter<T>	iterator;
+		typedef				T								value_type;
+		typedef				Allocator						allocator_type;
+		typedef typename	std::size_t						size_type;
+		typedef typename	std::ptrdiff_t					difference_type;
+		typedef				value_type&						reference;
+		typedef				const value_type&				const_reference;
+		typedef				value_type*						pointer;
+		typedef				const value_type*				const_pointer;
+		typedef				ft::iterator<T>					iterator;
+		typedef				ft::iterator<const T>			const_iterator;
+		typedef				ft::reverse_iterator<T>			reverse_iterator;
+		typedef				ft::reverse_iterator<const T>	const_reverse_iterator;
 
 		explicit vector(const Allocator& alloc = Allocator()): _mas(NULL), _capacity(0), _size(0), _alloc(alloc){}
 		explicit vector(size_type count, const T& value = T(), const Allocator& alloc = Allocator()){
@@ -39,7 +42,7 @@ namespace ft{
 			}
 		}
 
-		vector& 	operator=(const vector& other){
+		vector& 		operator=(const vector& other){
 			this->_capacity = other._capacity;
 			if (this->_mas){
 				for (size_t i = 0; i < this->_size; i++)
@@ -52,17 +55,17 @@ namespace ft{
 				this->_mas[i] = other._mas[i];
 			return *this;
 		};
-		value_type& operator[](size_type i){return this->_mas[i];}
+		value_type& 	operator[](size_type i){return this->_mas[i];}
 
-		bool		empty(){return this->_mas == NULL;}
-		size_type	size(){return this->_size;}
-		size_type	capacity(){return this->_capacity;}
-		value_type&	at(size_type n){
+		bool			empty(){return this->_mas == NULL;}
+		size_type		size(){return this->_size;}
+		size_type		capacity(){return this->_capacity;}
+		value_type&		at(size_type n){
 			if (n >= this->_size)
 				throw std::bad_alloc();
 			return this->_mas[n];
 		}
-		void 		reserve(std::size_t n){
+		void 			reserve(std::size_t n){
 			if (n > this->_alloc.max_size())
 				throw std::bad_alloc();
 			if (n < this->_capacity)
@@ -76,10 +79,18 @@ namespace ft{
 			this->_mas = newMas;
 			this->_capacity = n;
 		}
-		iterator	begin(){return iterator(this->_mas);}
-		iterator	end(){return iterator(this->_mas + this->_size);}
-		void		insert(T val, int n){this->_mas[n] = val;}
-
+		iterator		begin(){return iterator(this->_mas);}
+		iterator		end(){return iterator(this->_mas + this->_size);}
+		const_iterator	cbegin() const{
+			return const_iterator(this->_mas);
+		}
+		const_iterator	cend() const{
+			return const_iterator(this->_mas + this->_size);
+		}
+		reverse_iterator	rbegin(){return reverse_iterator(this->end() - 1);}
+		reverse_iterator	rend(){return reverse_iterator(this->begin() - 1);}
+		const_reverse_iterator	crbegin(){return const_reverse_iterator(this->_mas + this->_size);}
+		const_reverse_iterator	crend(){return const_reverse_iterator(this->_mas);}
 	private:
 		value_type* 	_mas;
 		size_type		_capacity;
