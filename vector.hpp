@@ -2,6 +2,7 @@
 #define VECTOR_HPP
 
 #include <iostream>
+#include <string>
 #include "iterator.hpp"
 
 namespace ft{
@@ -87,10 +88,10 @@ namespace ft{
 		const_iterator	cend() const{
 			return const_iterator(this->_mas + this->_size);
 		}
-		reverse_iterator	rbegin(){return reverse_iterator(this->end() - 1);}
-		reverse_iterator	rend(){return reverse_iterator(this->begin() - 1);}
-		const_reverse_iterator	crbegin(){return const_reverse_iterator(this->_mas + this->_size);}
-		const_reverse_iterator	crend(){return const_reverse_iterator(this->_mas);}
+		reverse_iterator	rbegin(){return reverse_iterator(end());}
+		reverse_iterator	rend(){return reverse_iterator(begin());}
+		const_reverse_iterator	crbegin(){return const_reverse_iterator(cend());}
+		const_reverse_iterator	crend(){return const_reverse_iterator(cbegin());}
 	private:
 		value_type* 	_mas;
 		size_type		_capacity;

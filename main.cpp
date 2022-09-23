@@ -4,7 +4,7 @@
 // #if 1 //CREATE A REAL STL EXAMPLE
 // 	#include <map>
 // 	#include <stack>
-	#include <vector>
+	// #include <vector>
 // 	namespace ft = std;
 // #else
 // 	#include <map.hpp>
@@ -131,20 +131,20 @@ int main(){
 	// std::cout << ptr1[1] << std::endl;
 	// std::cout << ptr1[2] << std::endl;
 
-	ft::vector<std::string> v1(10, "hello");
+	ft::vector<int> v1(10, 5);
 	// std::vector<std::string> v2(10, "hello");
 	
 	// std::vector<std::string>::reverse_iterator it_std_begin = v2.rbegin();
 	// ft::vector<std::string>::iterator it_begin = v1.begin();
 	// ft::vector<std::string>::iterator it_end = v1.end();
-	ft::vector<std::string>::reverse_iterator it_rbegin = v1.rbegin();
+	ft::vector<int>::reverse_iterator it_rbegin = v1.rbegin();
 	// std::cout << *it_std_begin << std::endl;
 	// std::cout << *it_rbegin << std::endl;
-	ft::vector<std::string>::reverse_iterator it_rend = v1.rend();
+	ft::vector<int>::reverse_iterator it_rend = v1.rend();
 	// it_rbegin++;
-	std::cout << *it_rbegin << "\n";
-	std::cout << *it_rend << "\n";
-	// for (ft::vector<std::string>::reverse_iterator i = it_rbegin; i != it_rend; i++)
+	// std::cout << *it_rbegin << "\n";
+	// std::cout << *it_rend << "\n";
+	// for (ft::vector<int>::reverse_iterator i = it_rbegin; i != it_rend; i++)
 	// {
 	// 	std::cout << *i << "\n";
 	// }
