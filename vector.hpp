@@ -150,7 +150,23 @@ namespace ft{
 				_alloc.destroy(_mas + _size);
 			}
 		}
-		
+		iterator				insert(const_iterator pos, const T& value){
+			if (pos == cend()){
+				push_back(value);
+				return end();
+			}
+			if(_size == _capacity)
+				reserve(_capacity == 0 ? 1 : _capacity * 2);
+			size_type n = pos.base() - begin().base();
+			_alloc.construct(_mas + _size, _mas[_size - 1]);
+			for (size_type i = _size - 1; i != n; i--){
+				_alloc.destroy(_mas + i);
+				_alloc.construct(_mas + i, _mas[i - 1]);
+			}
+			_alloc.construct(_mas + n, value);
+			_size++;
+			return (begin() + n);
+		}
 	private:
 		value_type* 	_mas;
 		size_type		_capacity;
