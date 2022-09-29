@@ -26,10 +26,10 @@ int main(){
 	ft::vector<std::string>::iterator last = v2.end();
 	v1.swap(v2);
 	v1.assign(v2.begin(), v2.end());
-	v1.resize(0, "Hell");
-	// std::is_integral<int>
+	v1.resize(5, "Hell");
 	ft::vector<std::string>::iterator it_begin = v1.begin();
 	ft::vector<std::string>::iterator it_end = v1.end();
+	// std::cout << ft::equal(it_begin, it_end, first) << std::endl << std::endl;
 	// for (ft::vector<std::string>::iterator i = it_begin; i != it_end; i++)
 	// {
 	// 	std::cout << *i << "\n";
