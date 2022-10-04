@@ -23,8 +23,16 @@ namespace ft{
 		typedef				ft::reverse_iterator<iterator>			reverse_iterator;
 		typedef				ft::reverse_iterator<const_iterator>	const_reverse_iterator;
 
-		explicit vector(const Allocator& alloc = Allocator()): _mas(NULL), _capacity(0), _size(0), _alloc(alloc){}
-		explicit vector(size_type count, const T& value = T(), const Allocator& alloc = Allocator()){
+	private:
+		value_type* 	_mas;
+		size_type		_capacity;
+		size_type		_size;
+		allocator_type	_alloc;
+
+	public:
+
+		explicit vector(const allocator_type& alloc = allocator_type()): _mas(NULL), _capacity(0), _size(0), _alloc(alloc){}
+		explicit vector(size_type count, const T& value = T(), const allocator_type& alloc = allocator_type()){
 			if (count > this->_alloc.max_size())
 				throw std::bad_alloc();
 			this->_alloc = alloc;
@@ -34,26 +42,28 @@ namespace ft{
 			for (size_type i = 0; i < count; i++)
 				this->_mas[i] = value;
 		}
-		vector(const vector& other){*this = other;}
 		~vector(){
-			if (this->_mas){
-				for (size_t i = 0; i < this->_size; i++)
-					this->_alloc.destroy(&(this->_mas[i]));
-				this->_alloc.deallocate(this->_mas, this->_capacity);
-			}
+			for (size_t i = 0; i < _size; i++)
+				_alloc.destroy(_mas + i);
+			if (_capacity > 0)
+				_alloc.deallocate(_mas, _capacity);
 		}
 
+		vector(const vector& other): _capacity(0), _size(0){*this = other;}
 		vector& 		operator=(const vector& other){
-			this->_capacity = other._capacity;
-			if (this->_mas){
-				for (size_t i = 0; i < this->_size; i++)
-					this->_alloc.destroy(_mas + i);
-				this->_alloc.deallocate(this->_mas, this->_capacity);
-			}
-			this->_mas = this->_alloc.allocate(other._capacity);
+			if (this == &other)
+				return *this;
+			for (size_type i = 0; i < _size; i++)
+				_alloc.destroy(_mas + i);
 			this->_size = other._size;
-			for (size_type i = 0; i < this->_capacity ; i++)
-				this->_mas[i] = other._mas[i];
+			if(_capacity < _size){
+				if (_capacity != 0)
+					_alloc.deallocate(_mas, _capacity);
+				_capacity = _size;
+				_mas = _alloc.allocate(_capacity);
+			}
+			for (size_type i = 0; i < _size; i++)
+				_alloc.construct(_mas + i, other[i]);
 			return *this;
 		};
 		reference		operator[](size_type i){return this->_mas[i];}
@@ -82,7 +92,8 @@ namespace ft{
 				_alloc.construct(newMas + i, this->_mas[i]);
 				this->_alloc.destroy(&(this->_mas[i]));
 			}
-			this->_alloc.deallocate(this->_mas, this->_size);
+			if (_size)
+				this->_alloc.deallocate(this->_mas, this->_size);
 			this->_mas = newMas;
 			this->_capacity = n;
 		}
@@ -256,11 +267,6 @@ namespace ft{
 				_alloc.construct(_mas + i, value);
 			_size = count;		
 		}
-	private:
-		value_type* 	_mas;
-		size_type		_capacity;
-		size_type		_size;
-		allocator_type	_alloc;
 	};
 
 	template<class T, class Alloc>
