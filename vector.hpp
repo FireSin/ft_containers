@@ -45,7 +45,7 @@ namespace ft{
 		~vector(){
 			for (size_t i = 0; i < _size; i++)
 				_alloc.destroy(_mas + i);
-			if (_capacity > 0)
+			if (_capacity)
 				_alloc.deallocate(_mas, _capacity);
 		}
 
@@ -92,8 +92,8 @@ namespace ft{
 				_alloc.construct(newMas + i, this->_mas[i]);
 				this->_alloc.destroy(&(this->_mas[i]));
 			}
-			if (_size)
-				this->_alloc.deallocate(this->_mas, this->_size);
+			if (_capacity)
+				this->_alloc.deallocate(this->_mas, this->_capacity);
 			this->_mas = newMas;
 			this->_capacity = n;
 		}
@@ -123,7 +123,7 @@ namespace ft{
 			this->_size = 0;
 		}
 		iterator				erase(iterator pos){
-			size_type n = pos.base() - begin().base();
+			size_type n = static_cast<size_type>(pos.base() - begin().base());
 			for (size_type i = n; i < _size; i++)
 			{
 				_alloc.destroy(_mas + i);
@@ -137,15 +137,15 @@ namespace ft{
 			if(first == last)
 				return last;
 			if(last == end()){
-				_size = first.base() - begin().base();
+				_size = static_cast<size_type>(first.base() - begin().base());
 				for (iterator i = first; i != last; i++)
 					_alloc.destroy(i.base());
 				return end();
 			}
-			size_type f = first.base() - begin().base();
-			size_type l = last.base() - begin().base();
+			size_type f = static_cast<size_type>(first.base() - begin().base());
+			size_type l = static_cast<size_type>(last.base() - begin().base());
 			size_type n = l;
-			size_type new_size = _size - (last.base() - first.base());
+			size_type new_size = _size - static_cast<size_type>(last.base() - first.base());
 			for (size_type i = f; i < l; i++){
 				_alloc.destroy(_mas + i);
 				if (n < _size)
@@ -166,14 +166,14 @@ namespace ft{
 				_alloc.destroy(_mas + _size);
 			}
 		}
-		iterator				insert(const_iterator pos, const T& value){
-			if (pos == cend()){
-				push_back(value);
-				return end();
+		iterator				insert(iterator pos, const T& value){
+			size_type n = static_cast<size_type>(pos.base() - begin().base());
+			if (pos == end()){
+				push_back(&(*value));
+				return end() - 1;
 			}
 			if(_size == _capacity)
 				reserve(_capacity == 0 ? 1 : _capacity * 2);
-			size_type n = pos.base() - begin().base();
 			_alloc.construct(_mas + _size, _mas[_size - 1]);
 			for (size_type i = _size - 1; i != n; i--){
 				_alloc.destroy(_mas + i);
@@ -183,52 +183,49 @@ namespace ft{
 			_size++;
 			return (begin() + n);
 		}
-		iterator				insert(const_iterator pos, size_type count, const T& value){
+		iterator				insert(iterator pos, size_type count, const T& value){
 			if (count == 0)
 				return begin();
-			if (_size + count > _capacity)
-				reserve(_size + count + 10);
-			if (pos.base() == end().base()){
-				for (size_t i = _size; i < _size + count; i++)
-					_alloc.construct(_mas + i, value);
-				_size += count;
-				return end() - count;
+			size_type n = static_cast<size_type>(pos.base() - this->begin().base());
+			while(_size + count > _capacity)
+				reserve(_capacity == 0 ? 1 : _capacity * 2);
+			if (_size){
+				for (size_type i = _size - (n - 1); i > 0; i--)
+				{
+					_alloc.destroy(_mas + n + i + count - 1);
+					_alloc.construct(_mas + n + i + count - 1, _mas[n + i - 1]);
+				}
 			}
-			difference_type n = pos.base() - this->cbegin().base();
-			for (size_type i = _size; i > n; i--)
+			for (size_t i = 0; i < count; i++)
 			{
-				_alloc.destroy(_mas + i + count - 1);
-				_alloc.construct(_mas + i + count - 1, _mas[i - 1]);
-			}
-			for (size_type i = 0; i < count; i++){
-				_alloc.destroy(_mas + i + n);
-				_alloc.construct(_mas + n + i, value);
+				if (_size)
+					_alloc.destroy(_mas + n + i);
+				_alloc.construct(_mas + n + i, &(*value));
 			}
 			_size += count;
 			return begin() + n;
 		}
 		template< class InputIt >
-		iterator 				insert(const_iterator pos, InputIt first, InputIt last, typename enable_if<!is_integral<InputIt>::value>::type* = 0){
-			difference_type count = last.base() - first.base();
+		iterator 				insert(iterator pos, InputIt first, InputIt last, typename enable_if<!is_integral<InputIt>::value>::type* = 0){
+			size_type count = static_cast<size_type>(last.base() - first.base());
+			size_type n = static_cast<size_type>(pos.base() - begin().base());
 			if (count == 0)
 				return begin();
-			if (_size + count > _capacity)
-				reserve(_size + count + 10);
-			if (pos.base() == end().base()){
-				for (size_t i = _size; i < _size + count; i++)
-					_alloc.construct(_mas + i, *first++);
-				_size += count;
-				return end() - count;
+			while(_size + count > _capacity)
+				reserve(_capacity == 0 ? 1 : _capacity * 2);
+			if (_size){
+				for (size_type i = _size - (n - 1); i > 0; i--)
+				{
+					_alloc.destroy(_mas + n + i + count - 1);
+					_alloc.construct(_mas + n + i + count - 1, _mas[n + i - 1]);
+				}
 			}
-			difference_type n = pos.base() - begin().base();
-			for (size_type i = _size; i > n; i--)
+			for (size_t i = 0; i < count; i++)
 			{
-				_alloc.destroy(_mas + i + count - 1);
-				_alloc.construct(_mas + i + count - 1, _mas[i - 1]);
-			}
-			for (size_type i = 0; i < count; i++){
-				_alloc.destroy(_mas + i + n);
-				_alloc.construct(_mas + n + i, *first++);
+				if (_size)
+					_alloc.destroy(_mas + n + i);
+				*(_mas + n + i) = *first;
+				first++;
 			}
 			_size += count;
 			return begin() + n;
@@ -240,8 +237,8 @@ namespace ft{
 			std::swap(this->_capacity, other._capacity);
 		}
 		void					assign(size_type count, const T& value){
-			if (_capacity < count)
-				reserve(count);
+			while(count > _capacity)
+				reserve(_capacity == 0 ? 1 : _capacity * 2);
 			for (size_t i = 0; i < _size; i++)
 				_alloc.destroy(_mas + i);
 			for (size_t i = 0; i < count; i++)
@@ -250,9 +247,9 @@ namespace ft{
 		}
 		template< class InputIt >
 		void					assign(InputIt first, InputIt last, typename enable_if<!is_integral<InputIt>::value>::type* = 0){
-			size_type count = last.base() - first.base();
-			if (_capacity < count)
-				reserve(count);
+			size_type count = static_cast<size_type>(last.base() - first.base());
+			while(count > _capacity)
+				reserve(_capacity == 0 ? 1 : _capacity * 2);
 			for (size_type i = 0; i < _size; i++)
 				_alloc.destroy(_mas + i);
 			for (size_type i = 0; i < count; i++)

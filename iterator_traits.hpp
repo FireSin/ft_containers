@@ -36,11 +36,11 @@ namespace ft{
 	template<typename T>
     struct enable_if<true, T>{typedef T type;};
 
-	template<class T, bool v>
+	template<class T, T v>
 	struct integral_constant {
 		static const bool value = v;
 		typedef T value_type;
-		typedef integral_constant type;
+		typedef integral_constant<T, v> type;
 		operator value_type() const { return value; }
 	};
 
