@@ -38,10 +38,22 @@ namespace ft{
 				throw std::bad_alloc();
 			this->_alloc = alloc;
 			this->_mas = this->_alloc.allocate(count);
+			size_type i = 0;
+			try
+			{
+				for (; i < count; i++)
+					this->_alloc.construct(this->_mas + i, value);
+			}
+			catch(...)
+			{
+				for (size_type j = 0; j < i; j++)
+				{
+					_alloc.destroy(&_mas[i]);
+				}
+				_alloc.deallocate(_mas, count);
+			}
 			this->_capacity = count;
 			this->_size = count;
-			for (size_type i = 0; i < count; i++)
-				this->_alloc.construct(this->_mas + i, value);
 		}
 		~vector(){
 			for (size_t i = 0; i < _size; i++)
@@ -167,9 +179,14 @@ namespace ft{
 			return iterator(_mas + n - 1);
 		}
 		void					push_back(const T& value){
-			if(_size == _capacity)
-				reserve(_capacity == 0 ? 1 : _capacity * 2);
-			_alloc.construct(_mas + _size, value);
+			try{
+				if(_size == _capacity)
+					reserve(_capacity == 0 ? 1 : _capacity * 2);
+				_alloc.construct(_mas + _size, value);
+			}
+			catch(...){
+				throw ;
+			}
 			_size++;
 		}
 		void					pop_back(){
@@ -182,7 +199,12 @@ namespace ft{
 			size_type n = static_cast<size_type>(pos.base() - begin().base());
 			if (pos > end())
 				throw std::length_error("vector");
-			insert(pos, 1, value);
+			try{
+				insert(pos, 1, value);
+			}
+			catch(...){
+				throw;
+			}
 			return (begin() + n);
 		}
 		iterator				insert(iterator pos, size_type count, const T& value){
@@ -191,31 +213,40 @@ namespace ft{
 			if (count == 0)
 				return begin();
 			size_type new_cap = _capacity;
-			pointer	new_mas;
+			pointer	new_mas = _mas;
 			size_type n = static_cast<size_type>(pos.base() - begin().base());
 			size_type i = 0;
 			while(_size + count > new_cap)
 				new_cap = new_cap == 0 ? 1 : new_cap * 2;
-			new_mas = _alloc.allocate(new_cap);
 			try
 			{
-				for (; i < n; i++){
-					_alloc.construct(new_mas + i, _mas[i]);
+				if (new_cap != _capacity){
+					new_mas = _alloc.allocate(new_cap);
+					for (; i < n; i++){
+						_alloc.construct(new_mas + i, _mas[i]);
+					}
+					for (i = n; i < n + count; i++)
+					{
+						_alloc.construct(new_mas + i, value);
+					}
+					for (i = n + count; i < _size + count; i++)
+					{
+						_alloc.construct(new_mas + i, _mas[i - count]);
+					}
+					for (size_type i = 0; i < _size; i++)
+						_alloc.destroy(_mas + i);
+					_alloc.deallocate(_mas, _capacity);
+					_mas = new_mas;
+					_size = _size + count;
 				}
-				for (i = n; i < n + count; i++)
-				{
-					_alloc.construct(new_mas + i, value);
+				else{
+					for (size_type i = _size; i > n; i--) {
+						_alloc.construct(_mas + i + count - 1, *(_mas + i - 1));
+					}
+					for (size_type i = 0; i < count; i++) {
+						_alloc.construct(_mas + n + i, value);
+					}
 				}
-				for (i = n + count; i < _size + count; i++)
-				{
-					_alloc.construct(new_mas + i, _mas[i - count]);
-				}
-				for (size_type i = 0; i < _size; i++)
-					_alloc.destroy(_mas + i);
-				_alloc.deallocate(_mas, _capacity);
-				_mas = new_mas;
-				_capacity = new_cap;
-				_size = _size + count;
 			}
 			catch(...)
 			{
@@ -233,7 +264,7 @@ namespace ft{
 			if (pos > end())
 				throw std::length_error("vector");
 			size_type new_cap = _capacity;
-			pointer	new_mas;
+			pointer	new_mas = _mas;
 			size_type n = static_cast<size_type>(pos.base() - begin().base());
 			size_type count = static_cast<size_type>(last.base() - first.base());
 			size_type i = 0;
@@ -241,28 +272,38 @@ namespace ft{
 				return begin();
 			while(_size + count > new_cap)
 				new_cap = new_cap == 0 ? 1 : new_cap * 2;
-			new_mas = _alloc.allocate(new_cap);
 			try
 			{
-				for (; i < n; i++)
-				{
-					_alloc.construct(new_mas + i, _mas[i]);
+				if (new_cap != _capacity){
+					new_mas = _alloc.allocate(new_cap);
+					for (; i < n; i++)
+					{
+						_alloc.construct(new_mas + i, _mas[i]);
+					}
+					for (i = n; i < n + count; i++)
+					{
+						_alloc.construct(new_mas + i, *first);
+						first++;
+					}
+					for (i = n + count; i < _size + count; i++)
+					{
+						_alloc.construct(new_mas + i, _mas[i - count]);
+					}
+					for (size_type i = 0; i < _size; i++)
+						_alloc.destroy(_mas + i);
+					_alloc.deallocate(_mas, _capacity);
+					_mas = new_mas;
+					_capacity = new_cap;
 				}
-				for (i = n; i < n + count; i++)
-				{
-					_alloc.construct(new_mas + i, *first);
-					first++;
+				else{
+					for (size_type i = _size; i > n; i--) {
+						_alloc.construct(_mas + i + count - 1, *(_mas + i - 1));
+					}
+					for (size_type i = 0; i < count; i++, first++) {
+						_alloc.construct(_mas + n + i, *first);
+					}
 				}
-				for (i = n + count; i < _size + count; i++)
-				{
-					_alloc.construct(new_mas + i, _mas[i - count]);
-				}
-				for (size_type i = 0; i < _size; i++)
-					_alloc.destroy(_mas + i);
-				_alloc.deallocate(_mas, _capacity);
-				_mas = new_mas;
-				_capacity = new_cap;
-				_size = _size + count;
+				_size += count;
 			}
 			catch(...)
 			{
@@ -282,8 +323,11 @@ namespace ft{
 			std::swap(this->_capacity, other._capacity);
 		}
 		void					assign(size_type count, const T& value){
-			while(count > _capacity)
-				reserve(_capacity == 0 ? 1 : _capacity * 2);
+			size_type new_cap = _capacity;
+			while(count > new_cap)
+				new_cap = new_cap == 0 ? 1 : new_cap * 2;
+			if (new_cap != _capacity)
+				reserve(new_cap);
 			for (size_t i = 0; i < _size; i++)
 				_alloc.destroy(_mas + i);
 			for (size_t i = 0; i < count; i++)
@@ -293,8 +337,11 @@ namespace ft{
 		template< class InputIt >
 		void					assign(InputIt first, InputIt last, typename enable_if<!is_integral<InputIt>::value>::type* = 0){
 			size_type count = static_cast<size_type>(last.base() - first.base());
-			while(count > _capacity)
-				reserve(_capacity == 0 ? 1 : _capacity * 2);
+			size_type new_cap = _capacity;
+			while(count > new_cap)
+				new_cap = new_cap == 0 ? 1 : new_cap * 2;
+			if (new_cap != _capacity)
+				reserve(new_cap);
 			for (size_type i = 0; i < _size; i++)
 				_alloc.destroy(_mas + i);
 			for (size_type i = 0; i < count; i++)
@@ -303,61 +350,36 @@ namespace ft{
 		}
 		void					resize(size_type count, T value = T()){
 			clear();
-			if (_capacity < count)
-				reserve(count);
-			for (size_t i = 0; i < count; i++)
-				_alloc.construct(_mas + i, value);
-			_size = count;		
+			try{
+				if (_capacity < count)
+					reserve(count);
+				for (size_t i = 0; i < count; i++)
+					_alloc.construct(_mas + i, value);
+				_size = count;		
+			}
+			catch(...){
+				throw ;
+			}
 		}
 	};
 
 	template<class T, class Alloc>
-	bool operator==(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs ){
-		if (lhs._size != rhs._size)
-			return false;
-		for (size_t i = 0; i < lhs._size; i++)
-		{
-			if(lhs[i] != rhs[i])
-				return false;
-		}
-		return true;
-	}
+	bool operator==(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs ){return equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());}
 
 	template<class T, class Alloc>
-	bool operator!=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs){
-		if (lhs == rhs)
-			return false;
-		return true;
-	}
+	bool operator!=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs){return !(lhs == rhs);}
 
 	template<class T, class Alloc>
-	bool operator<(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs){
-		if (lhs < rhs)
-			return true;
-		return false;
-	}
+	bool operator<(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs){return lexicographical_compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());}
 
 	template<class T, class Alloc>
-	bool operator<=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs){
-		if (lhs > rhs)
-			return false;
-		return true;
-	}
+	bool operator<=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs){return !(lhs > rhs);}
 
 	template<class T, class Alloc>
-	bool operator>(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs){
-		if (lhs > rhs)
-			return true;
-		return false;
-	}
+	bool operator>(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs){return rhs < lhs;}
 
 	template<class T, class Alloc>
-
-	bool operator>=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs){
-		if (lhs < rhs)
-			return false;
-		return true;
-	}
+	bool operator>=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs){return !(lhs < rhs);}
 
 	template< class T, class Alloc >
 	void swap(vector<T,Alloc>& lhs, vector<T,Alloc>& rhs){

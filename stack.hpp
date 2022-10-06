@@ -31,28 +31,42 @@ namespace ft{
 		void			push(const value_type& value){_mas.push_back(value);}
 		void			pop(){_mas.pop_back();}
 	
-	
 	private:
 		container_type _mas;
+
+		template< class T1, class Container1>
+		friend	bool operator==(const ft::stack<T1,Container1>& lhs, const ft::stack<T1,Container1>& rhs);
+		
+		template< class T1, class Container1 >
+		friend	bool operator<(const ft::stack<T1,Container1>& lhs, const ft::stack<T1,Container1>& rhs);
+
+		template< class T1, class Container1 >
+		friend	bool operator<=(const ft::stack<T1,Container1>& lhs, const ft::stack<T1,Container1>& rhs);
+
+		template< class T1, class Container1 >
+		friend	bool operator>(const ft::stack<T1,Container1>& lhs, const ft::stack<T1,Container1>& rhs);
+
+		template< class T1, class Container1 >
+		friend	bool operator>=(const ft::stack<T1,Container1>& lhs, const ft::stack<T1,Container1>& rhs);
 	};
 
-	template< class T, class Container >
-	bool operator==(const ft::stack<T,Container>& lhs, const ft::stack<T,Container>& rhs){return lhs == rhs;}
+	template< class T1, class Container1>
+	bool operator==(const ft::stack<T1,Container1>& lhs, const ft::stack<T1,Container1>& rhs){return lhs._mas == rhs._mas;}
 
-	template< class T, class Container >
-	bool operator!=(const ft::stack<T,Container>& lhs, const ft::stack<T,Container>& rhs){return !(lhs == rhs);};
+	template< class T1, class Container1 >
+	bool operator!=(const ft::stack<T1,Container1>& lhs, const ft::stack<T1,Container1>& rhs){return !(lhs._mas == rhs._mas);};
 
-	template< class T, class Container >
-	bool operator<(const ft::stack<T,Container>& lhs, const ft::stack<T,Container>& rhs){return lhs < rhs;};
+	template< class T1, class Container1 >
+	bool operator<(const ft::stack<T1,Container1>& lhs, const ft::stack<T1,Container1>& rhs){return lhs._mas < rhs._mas;};
 
-	template< class T, class Container >
-	bool operator<=(const ft::stack<T,Container>& lhs, const ft::stack<T,Container>& rhs){return lhs <= rhs;};
+	template< class T1, class Container1 >
+	bool operator<=(const ft::stack<T1,Container1>& lhs, const ft::stack<T1,Container1>& rhs){return lhs._mas <= rhs._mas;};
 
-	template< class T, class Container >
-	bool operator>(const ft::stack<T,Container>& lhs, const ft::stack<T,Container>& rhs){return lhs > rhs;};
+	template< class T1, class Container1 >
+	bool operator>(const ft::stack<T1,Container1>& lhs, const ft::stack<T1,Container1>& rhs){return lhs._mas > rhs._mas;};
 
-	template< class T, class Container >
-	bool operator>=(const ft::stack<T,Container>& lhs, const ft::stack<T,Container>& rhs){return lhs >= rhs;};
+	template< class T1, class Container1 >
+	bool operator>=(const ft::stack<T1,Container1>& lhs, const ft::stack<T1,Container1>& rhs){return lhs._mas >= rhs._mas;};
 
 }
 
