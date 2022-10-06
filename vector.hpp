@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <memory>
 #include "iterator.hpp"
 
 namespace ft{
@@ -40,7 +41,7 @@ namespace ft{
 			this->_capacity = count;
 			this->_size = count;
 			for (size_type i = 0; i < count; i++)
-				this->_mas[i] = value;
+				this->_alloc.construct(this->_mas + i, value);
 		}
 		~vector(){
 			for (size_t i = 0; i < _size; i++)
@@ -87,15 +88,26 @@ namespace ft{
 				throw std::bad_alloc();
 			if (n < this->_capacity)
 				return ;
+			size_type i = 0;
 			value_type *newMas = this->_alloc.allocate(n);
-			for (size_type i = 0; i < this->_size; i++){
-				_alloc.construct(newMas + i, this->_mas[i]);
-				this->_alloc.destroy(&(this->_mas[i]));
+			if (!newMas)
+				throw std::bad_alloc();
+			try{
+				for (; i < this->_size; i++){
+					_alloc.construct(newMas + i, this->_mas[i]);
+					this->_alloc.destroy(&(this->_mas[i]));
+				}
+				if (_capacity)
+					this->_alloc.deallocate(this->_mas, this->_capacity);
+				this->_mas = newMas;
+				this->_capacity = n;
 			}
-			if (_capacity)
-				this->_alloc.deallocate(this->_mas, this->_capacity);
-			this->_mas = newMas;
-			this->_capacity = n;
+			catch(...){
+				for(int j = i - 1; j >= 0; j--)
+					_alloc.destroy(&newMas[j]);
+				_alloc.deallocate(newMas, n);
+				throw std::bad_alloc();
+			}
 		}
 		iterator				begin(){return iterator(this->_mas);}
 		iterator				end(){return iterator(this->_mas + this->_size);}
@@ -168,66 +180,99 @@ namespace ft{
 		}
 		iterator				insert(iterator pos, const T& value){
 			size_type n = static_cast<size_type>(pos.base() - begin().base());
-			if (pos == end()){
-				push_back(&(*value));
-				return end() - 1;
-			}
-			if(_size == _capacity)
-				reserve(_capacity == 0 ? 1 : _capacity * 2);
-			_alloc.construct(_mas + _size, _mas[_size - 1]);
-			for (size_type i = _size - 1; i != n; i--){
-				_alloc.destroy(_mas + i);
-				_alloc.construct(_mas + i, _mas[i - 1]);
-			}
-			_alloc.construct(_mas + n, value);
-			_size++;
+			if (pos > end())
+				throw std::length_error("vector");
+			insert(pos, 1, value);
 			return (begin() + n);
 		}
 		iterator				insert(iterator pos, size_type count, const T& value){
+			if (pos > end())
+				throw std::length_error("vector");
 			if (count == 0)
 				return begin();
-			size_type n = static_cast<size_type>(pos.base() - this->begin().base());
-			while(_size + count > _capacity)
-				reserve(_capacity == 0 ? 1 : _capacity * 2);
-			if (_size){
-				for (size_type i = _size - (n - 1); i > 0; i--)
-				{
-					_alloc.destroy(_mas + n + i + count - 1);
-					_alloc.construct(_mas + n + i + count - 1, _mas[n + i - 1]);
-				}
-			}
-			for (size_t i = 0; i < count; i++)
+			size_type new_cap = _capacity;
+			pointer	new_mas;
+			size_type n = static_cast<size_type>(pos.base() - begin().base());
+			size_type i = 0;
+			while(_size + count > new_cap)
+				new_cap = new_cap == 0 ? 1 : new_cap * 2;
+			new_mas = _alloc.allocate(new_cap);
+			try
 			{
-				if (_size)
-					_alloc.destroy(_mas + n + i);
-				_alloc.construct(_mas + n + i, &(*value));
+				for (; i < n; i++){
+					_alloc.construct(new_mas + i, _mas[i]);
+				}
+				for (i = n; i < n + count; i++)
+				{
+					_alloc.construct(new_mas + i, value);
+				}
+				for (i = n + count; i < _size + count; i++)
+				{
+					_alloc.construct(new_mas + i, _mas[i - count]);
+				}
+				for (size_type i = 0; i < _size; i++)
+					_alloc.destroy(_mas + i);
+				_alloc.deallocate(_mas, _capacity);
+				_mas = new_mas;
+				_capacity = new_cap;
+				_size = _size + count;
 			}
-			_size += count;
-			return begin() + n;
+			catch(...)
+			{
+				for (size_type j = 0; j < i; j++)
+				{
+					_alloc.destroy(new_mas + j);
+				}
+				_alloc.deallocate(new_mas, new_cap);
+				throw;
+			}
+			return begin() + count;	
 		}
 		template< class InputIt >
 		iterator 				insert(iterator pos, InputIt first, InputIt last, typename enable_if<!is_integral<InputIt>::value>::type* = 0){
-			size_type count = static_cast<size_type>(last.base() - first.base());
+			if (pos > end())
+				throw std::length_error("vector");
+			size_type new_cap = _capacity;
+			pointer	new_mas;
 			size_type n = static_cast<size_type>(pos.base() - begin().base());
+			size_type count = static_cast<size_type>(last.base() - first.base());
+			size_type i = 0;
 			if (count == 0)
 				return begin();
-			while(_size + count > _capacity)
-				reserve(_capacity == 0 ? 1 : _capacity * 2);
-			if (_size){
-				for (size_type i = _size - (n - 1); i > 0; i--)
-				{
-					_alloc.destroy(_mas + n + i + count - 1);
-					_alloc.construct(_mas + n + i + count - 1, _mas[n + i - 1]);
-				}
-			}
-			for (size_t i = 0; i < count; i++)
+			while(_size + count > new_cap)
+				new_cap = new_cap == 0 ? 1 : new_cap * 2;
+			new_mas = _alloc.allocate(new_cap);
+			try
 			{
-				if (_size)
-					_alloc.destroy(_mas + n + i);
-				*(_mas + n + i) = *first;
-				first++;
+				for (; i < n; i++)
+				{
+					_alloc.construct(new_mas + i, _mas[i]);
+				}
+				for (i = n; i < n + count; i++)
+				{
+					_alloc.construct(new_mas + i, *first);
+					first++;
+				}
+				for (i = n + count; i < _size + count; i++)
+				{
+					_alloc.construct(new_mas + i, _mas[i - count]);
+				}
+				for (size_type i = 0; i < _size; i++)
+					_alloc.destroy(_mas + i);
+				_alloc.deallocate(_mas, _capacity);
+				_mas = new_mas;
+				_capacity = new_cap;
+				_size = _size + count;
 			}
-			_size += count;
+			catch(...)
+			{
+				for (size_type j = 0; j < i; j++)
+				{
+					_alloc.destroy(new_mas + j);
+				}
+				_alloc.deallocate(new_mas, new_cap);
+				throw;
+			}
 			return begin() + n;
 		}
 		void					swap(vector& other){

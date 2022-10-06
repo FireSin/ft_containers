@@ -112,10 +112,15 @@ int main() {
 	    insert_test_3(v);
 	}	
 	// std::vector<int> v;
-	// std::vector<int> v2;
+	// ft::vector<int> v2;
 	// v2.push_back(1);
 	// v2.push_back(2);
 	// v2.push_back(3);
-	// v.insert(v.begin(), v2.begin(), v2.end());
+	// v2.insert(v2.begin() + 3, 1, 12);
+	// for (ft::vector<int>::iterator i = v2.begin(); i != v2.end(); i++)
+	// {
+	// 	std::cout << *i << std::endl;
+	// }
+	
 	return 0;
 }

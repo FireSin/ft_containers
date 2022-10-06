@@ -21,7 +21,7 @@ namespace ft{
 			_mas = other._mas;
 			return (*this);
 		}
-		// ~stack();
+		~stack(){};
 		
 		
 		reference		top(){return _mas.back();}
