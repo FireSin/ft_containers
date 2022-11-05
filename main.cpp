@@ -102,25 +102,15 @@ std::vector<int> insert_test_3(ft::vector<T> vector) {
 	return v;
 }
 
+#include <utility>
+#include <set>
+#include "rbTree.hpp"
 int main() {
-	// {
-	//     ft::vector<int> v;
-	//     insert_test_3(v);
-	// }
-	// {
-	//     std::vector<int> v;
-	//     insert_test_3(v);
-	// }	
-	ft::vector<int> st;
-    ft::vector<int> st2;
-    st.push_back(10);
-    st.push_back(12);
-	st.push_back(12);
-	st.push_back(13);
-	st2.push_back(10);
-    st2.push_back(12);
-    st2.push_back(12);
-    std::cout << (st >= st2) << std::endl;
-
+	ft::vector<int> v;
+	for (size_t i = 0; i < 15; i++)
+		v.insert(v.begin(), i);
+	for (size_t i = 0; i < 15; i++)
+		std::cout << v[i] << std::endl;
+	ft::red_black_tree<int> a;
 	return 0;
 }

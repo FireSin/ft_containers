@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include "iterator.hpp"
+#include "algorithm.hpp"
 
 namespace ft{
 	template<typename T, typename Allocator = std::allocator<T> >

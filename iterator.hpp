@@ -3,6 +3,7 @@
 
 #include "vector.hpp"
 #include "iterator_traits.hpp"
+#include "algorithm.hpp"
 
 namespace ft{
 
@@ -20,8 +21,8 @@ namespace ft{
 		public:
 		iterator(): _ptr(){};
 		iterator(pointer ptr): _ptr(ptr){};
-		iterator(const iterator &other): _ptr(other._ptr){};
-		iterator	&operator=(const iterator &other){
+		iterator(const iterator<typename remove_const<value_type>::type > &other): _ptr(other.base()){};
+		iterator<value_type>	&operator=(const iterator<typename remove_const<value_type>::type > &other){
 			this->_ptr = other._ptr;
 			return(*this);
 		}
