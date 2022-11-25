@@ -1,7 +1,7 @@
 NAME = ft_containers
 CC = c++
 
-CPPFLAGS = -g -Wall -Wextra -Werror
+CPPFLAGS = -g -Wall -Wextra -Werror -std=c++98
 
 OBJDIR = ./objs
 VPATH = .

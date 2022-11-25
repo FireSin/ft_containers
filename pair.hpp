@@ -18,6 +18,7 @@ namespace ft{
 		pair& operator=(const pair& other){
 			this->_first = other._first;
 			this->_second = other._second;
+			return *this;
 		};
 	};
 
