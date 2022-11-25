@@ -130,122 +130,48 @@ namespace ft{
 			}
 
 			void rotate_left(p_node node){
-				p_node tmp = node->_right;
-				node->_right = tmp->_left;
-				if(tmp->_left){
-					tmp->_left->_parent = node;
-				}
-				tmp->_left = node;
-				tmp->_parent = node->_parent;
-				node->_parent = tmp;
-				if (tmp->_parent){
-					if (tmp->_parent->_right == tmp->_left){
-						tmp->_parent->_right = tmp;
+				p_node grandp = node->_parent->_parent;
+				p_node parnt = node->_parent;
+				p_node tmp = node->_left;
+				if (grandp != NULL){
+					if (grandp->_left == parnt){
+						grandp->_left = node;
 					} else {
-						tmp->_parent->_left = tmp;
+						grandp->_right = node;
 					}
-				} else{
-					_head = tmp;
+				}
+				node->_parent = grandp;
+				parnt->_parent = node;
+				node->_left = parnt;
+				parnt->_right = tmp;
+				if (grandp == NULL){
+					_head = node;
 				}
 			}
 
 			void rotate_right(p_node node){
-				p_node tmp = node->_left;
-				node->_right = tmp->_right;
-				if(tmp->_right){
-					tmp->_right->_parent = node;
-				}
-				tmp->_right = node;
-				tmp->_parent = node->_parent;
-				node->_parent = tmp;
-				if (tmp->_parent){
-					if (tmp->_parent->_left == tmp->_right){
-						tmp->_parent->_left = tmp;
+				p_node grandp = node->_parent->_parent;
+				p_node parnt = node->_parent;
+				p_node tmp = node->_right;
+				if (grandp != NULL){
+					if (grandp->_left == parnt){
+						grandp->_left = node;
 					} else {
-						tmp->_parent->_right = tmp;
+						grandp->_right = node;
 					}
-				} else{
-					_head = tmp;
+				}
+				node->_parent = grandp;
+				parnt->_parent = node;
+				node->_right = parnt;
+				parnt->_left = tmp;
+				if (grandp == NULL){
+					_head = node;
 				}
 			}
 
-			void balance(p_node node){
-				while (is_Red(node->_parent)){
-					if (node == node->_parent->_left){
-						if (is_Red(node->_parent->_parent->_right)){
-							node->_parent->_color = BLACK;
-							node->_parent->_parent->_right->_color = BLACK;
-							node->_parent->_parent->_color = RED;
-							node = node->_parent->_parent;
-							continue;
-						} else{  //black uncle
-							node->_parent->_color = BLACK;
-							node->_parent->_parent->_color = RED;
-							rotate_right(node->_parent->_parent);
-							break;
-						}
-					} else{
-						if (is_Red(node->_parent->_parent->_left)){ 
-							node->_parent->_color = BLACK;
-							node->_parent->_parent->_left->_color = BLACK;
-							node->_parent->_parent->_color = RED;
-							node = node->_parent->_parent;
-							continue;
-						} else{
-							node->_parent->_color = BLACK;
-							node->_parent->_parent->_color = RED;
-							rotate_left(node->_parent->_parent);
-							break;
-						}
-					}
-				}
-				_head->_color = BLACK;
-			}
+			// void balance(p_node node){
 
-		// 	void balance(p_node node){
-		// 	if (node != _head && node->_parent != _head){
-		// 		while (node != _head && node->_parent->_color == RED){
-		// 			if (node->_parent == node->_parent->_parent->_left){
-		// 				p_node uncle = node->_parent->_parent->_right;
-		// 				if (uncle->_color == RED){
-		// 					node->_parent->_color = BLACK;
-		// 					uncle->_color = BLACK;
-		// 					node->_parent->_parent->_color = RED;
-		// 					node = node->_parent->_parent;
-		// 				}
-		// 				else {
-		// 					if (node == node->_parent->_right){
-		// 						node = node->_parent;
-		// 						rotate_left(node);
-		// 					}
-		// 					node->_parent->_color = BLACK;
-		// 					node->_parent->_parent->_color = RED;
-		// 					rotate_right(node->_parent->_parent);
-		// 				}
-		// 			}
-		// 			else{
-		// 				p_node uncle = node->_parent->_parent->_left;
-		// 				if (uncle->_color == RED){
-		// 					node->_parent->_color = BLACK;
-		// 					uncle->_color = BLACK;
-		// 					node->_parent->_parent->_color = RED;
-		// 					node = node->_parent->_parent;
-		// 				}
-		// 				else{
-		// 					if (node == node->_parent->_left){
-		// 						node = node->_parent;
-		// 						rotate_right(node);
-		// 					}
-		// 					node->_parent->_color = BLACK;
-		// 					node->_parent->_parent->_color = RED;
-		// 					rotate_left(node->_parent->_parent);
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-		// 	_head->_color = BLACK;
-		// }
-
+			// }
 
 			pair<p_node, bool> insert_to_tree(p_node *tree, const value& key){
 				p_node parent;
@@ -267,7 +193,7 @@ namespace ft{
 				}
 				*tree = newNode(key);
 				(*tree)->_parent = parent;
-				balance(*tree);
+				// balance(*tree);
 				_size++;
 				return ft::make_pair(*tree, true);
 			}
@@ -382,7 +308,7 @@ namespace ft{
 					*tmp = NULL;
 				} else {
 					p_node *tmp;
-					p_node parent = node->_parent;
+					// p_node parent = node->_parent;
 					if (node->_parent){
 						if (node->_parent->_right == node){
 							tmp = &node->_parent->_right;
@@ -394,111 +320,12 @@ namespace ft{
 					}
 					deleteNode(*tmp);
 					*tmp = NULL;
-					balanceEr(tmp, parent);
+					// balanceEr(tmp, parent);
 				}
 			}
 		}
 
 		void balanceEr(p_node *del, p_node parent){
-			while (parent != NULL){
-				if(&parent->_right == del){ //right removed
-					if (is_Red(parent)){
-						if (is_Red(parent->_left->_right)){
-							parent->_color = BLACK;
-							rotate_left(parent->_left);
-						}
-						rotate_right(parent);
-						return;
-					} else {
-						if (is_Red(parent->_left)){  //red brother
-							if (is_Red(parent->_left->_right->_left)){
-								parent->_left->_right->_left->_color = BLACK;
-								rotate_left(parent->_left);
-								rotate_right(parent);
-							} else if (is_Red(parent->_left->_right->_right)){
-								std::swap(parent->_left->_right->_color, parent->_left->_right->_right->_color);
-								rotate_left(parent->_left->_right);
-								parent->_left->_right->_left->_color = BLACK;
-								rotate_left(parent->_left);
-								rotate_right(parent);
-							} else {
-								parent->_left->_color = BLACK;
-								parent->_left->_right->_color = RED;
-								rotate_right(parent);
-							}
-							return;
-						} else {  //black brother
-							if (is_Red(parent->_left->_right)){
-								parent->_left->_right->_color = BLACK;
-								rotate_left(parent->_left);
-								rotate_right(parent);
-								return;
-							} else if (is_Red(parent->_left->_left)){
-								parent->_left->_left->_color = BLACK;
-								rotate_right(parent);
-								return;
-							}
-							parent->_left->_color = RED;
-							if (parent->_parent){
-								if (parent->_parent->_left == parent){
-									del = &parent->_parent->_left;
-								} else {
-									del = &parent->_parent->_right;
-								}
-							}
-							parent = parent->_parent;
-						}
-					}
-				} else { //left removed
-					if (is_Red(parent)){
-						if (is_Red(parent->_right->_left)){
-							parent->_color = BLACK;
-							rotate_right(parent->_right);
-						}
-						rotate_left(parent);
-						return;
-					} else { //black parent
-						if(is_Red(parent->_right)){
-							if(is_Red(parent->_right->_left->_right)){
-								parent->_right->_left->_right->_color = BLACK;
-								rotate_right(parent->_right);
-								rotate_left(parent);
-							} else if (is_Red(parent->_right->_left->_left)){
-								std::swap(parent->_right->_left->_color, parent->_right->_left->_left->_color);
-								rotate_right(parent->_right->_left);
-								parent->_right->_left->_right->_color = BLACK;
-								rotate_right(parent->_right);
-								rotate_left(parent);
-							} else {
-								parent->_right->_color = BLACK;
-								parent->_right->_left->_color = RED;
-								rotate_left(parent);
-							}
-							return;
-						} else { //black brother
-							if (is_Red(parent->_right->_left)){
-								parent->_right->_left->_color = BLACK;
-								rotate_right(parent->_right);
-								rotate_left(parent);
-								return;
-							} else if (is_Red(parent->_right->_right)){
-								parent->_right->_right->_color = BLACK;
-								rotate_left(parent);
-								return;
-							}
-							parent->_right->_color = RED;
-							if (parent->_parent){
-								if (parent->_parent->_right == parent){
-									del = &parent->_parent->_right;
-								} else {
-									del = &parent->_parent->_left;
-								}
-							}
-							parent = parent->_parent;
-						}
-					}
-				}
-			}
 			
 		}
 
@@ -645,9 +472,9 @@ namespace ft{
 				std::cout <<"\033[0;36m"<< nodeV->_value._first<<"\033[0m"<<std::endl;
 			else
 				std::cout <<"\033[0;31m"<< nodeV->_value._first << "\033[0m"<<std::endl;
-			printBT( prefix + (isLeft ? "│   " : "    "), nodeV->_left, true);
-			printBT( prefix + (isLeft ? "│   " : "    "), nodeV->_right, false);
-	}
+			printBT( prefix + (isLeft ? "│   " : "    "), nodeV->_right, true);
+			printBT( prefix + (isLeft ? "│   " : "    "), nodeV->_left, false);
+		}
 	};
 }
 

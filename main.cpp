@@ -107,15 +107,43 @@
 #include <map>
 #include "rbTree.hpp"
 #include "pair.hpp"
+
 int main() {
 	ft::rbTree<ft::pair<int, std::string> > a;
-	a.insert(ft::pair<int, std::string>(1, "asd"));
-	a.insert(ft::pair<int, std::string>(2, "asd"));
-	a.insert(ft::pair<int, std::string>(10, "asd"));
+	// a.insert(ft::pair<int, std::string>(7, "asd"));
+	// a.insert(ft::pair<int, std::string>(4, "asd"));
+	// a.insert(ft::pair<int, std::string>(3, "asd"));
+	// a.insert(ft::pair<int, std::string>(6, "asd"));
+	// a.insert(ft::pair<int, std::string>(2, "asd"));
+	// a.insert(ft::pair<int, std::string>(11, "asd"));
+	// a.insert(ft::pair<int, std::string>(9, "asd"));
+	// a.insert(ft::pair<int, std::string>(18, "asd"));
+	// a.insert(ft::pair<int, std::string>(14, "asd"));
+	// a.insert(ft::pair<int, std::string>(12, "asd"));
+	// a.insert(ft::pair<int, std::string>(17, "asd"));
+	// a.insert(ft::pair<int, std::string>(19, "asd"));
+	// a.insert(ft::pair<int, std::string>(22, "asd"));
+	// a.insert(ft::pair<int, std::string>(20, "asd"));
+		a.insert(ft::pair<int, std::string>(2, "asd"));
 	a.insert(ft::pair<int, std::string>(3, "asd"));
+	a.insert(ft::pair<int, std::string>(4, "asd"));
 	a.insert(ft::pair<int, std::string>(5, "asd"));
-	a.rotate_right(a.findNode(ft::pair<int, std::string>(3, "asd")));
-	a.printBT(" ", a.getHead(), true);
+	a.printBT(" ", a.getHead(), false);
+	a.insert(ft::pair<int, std::string>(6, "asd"));
+	a.insert(ft::pair<int, std::string>(7, "asd"));
+	a.insert(ft::pair<int, std::string>(8, "asd"));
+	a.printBT(" ", a.getHead(), false);
+	// a.insert(ft::pair<int, std::string>(9, "asd"));
+	// a.insert(ft::pair<int, std::string>(10, "asd"));
+	// a.insert(ft::pair<int, std::string>(11, "asd"));
+	// a.printBT(" ", a.getHead(), false);
+	// a.insert(ft::pair<int, std::string>(12, "asd"));
+	// a.insert(ft::pair<int, std::string>(13, "asd"));
+	// a.insert(ft::pair<int, std::string>(14, "asd"));
+	// a.insert(ft::pair<int, std::string>(15, "asd"));
+	// a.printBT(" ", a.getHead(), false);
+	// a.eraseNode(a.findNode(ft::pair<int, std::string>(11, "asd")));
+	// a.printBT(" ", a.getHead(), false);
 	// a.insert(ft::pair<int, std::string>(4, "asd"));
 	// a.insert(ft::pair<int, std::string>(6, "asd"));
 	// a.insert(ft::pair<int, std::string>(8, "asd"));
