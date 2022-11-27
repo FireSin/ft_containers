@@ -33,16 +33,18 @@ namespace ft{
 		reference		operator*() {return _node->_value;}
 		pointer			operator->() const{return &_node->_value;}
 		iterTree		operator++() { //preincrement
-			if (!_node || _node == _node->maximum(_head)){
-				_node = NULL;
+			if (!_head || !_head->_parent){
 				return *this;
 			}
-			if (_node->_right){
-				_node = _node->minimum(_node->_right);
-			}
-			else{
-				while (_node->_parent && _node->_parent->_right == _node)
+			if (_node->_right != _head->_parent){
+				_node = _node->_right;
+				while (_node->_left != _head->_parent){
+					_node = _node->_left;
+				}
+			} else {
+				while (_node->_parent != _head->_parent && _node->_parent->_left == _node){
 					_node = _node->_parent;
+				}
 			}
 			return *this;
 		}
@@ -52,17 +54,6 @@ namespace ft{
 			return tmp;
 		}
 		iterTree		operator--() { //preincrement
-			if (!_node || _node == _node->minimum(_head)){
-				_node = NULL;
-				return *this;
-			}
-			if (_node->__left){
-				_node = _node->maximum(_node->__left);
-			}
-			else{
-				while (_node->_parent && _node->_parent->__left == _node)
-					_node = _node->_parent;
-			}
 			return *this;
 		}
 		iterTree		operator--(int){ //postincrement

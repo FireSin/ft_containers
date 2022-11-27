@@ -67,11 +67,12 @@ namespace ft{
 			key_compare		_key_comp;
 			node_alloc		_node_alloc;
 			size_type		_size;
+			p_node			_nil;
 		
 		public:
-			rbTree(): _head(NULL), _size(0){}
+			rbTree(): _head(NULL), _size(0), _nil(initNil()){}
 			explicit rbTree(const key_compare& comp, const node_alloc& allc = node_alloc()):
-				_head(NULL), _node_alloc(allc), _key_comp(comp), _size(0) {}
+				_head(NULL), _node_alloc(allc), _key_comp(comp), _size(0), _nil(initNil()) {}
 			rbTree(const rbTree& other): _head(NULL), _node_alloc(other._node_alloc), _key_comp(other._key_comp){
 				copyRBTree(_head, NULL, other._head);
 				_size = other._size;
@@ -85,7 +86,17 @@ namespace ft{
 				return *this;
 			}
 			~rbTree(){
-				clear(_head);
+				clear_tree();
+				deleteNode(_nil);
+			}
+
+			p_node	initNil(){
+			p_node nil = node_alloc().allocate(1);
+            nil->_left = NULL;
+            nil->_right = NULL;
+            nil->_parent = NULL;
+            nil->_color = BLACK;
+            return nil;
 			}
 
 			size_type size(){return _size;}
@@ -94,21 +105,27 @@ namespace ft{
 
 			iterator begin(){
 				p_node tmp = _head;
-				return iterator(tmp->minimum(_head), _head);				
+				while (tmp->_left && tmp->_left != _nil){
+					tmp = tmp->_left;
+				}
+				return iterator(tmp, _head);				
 			}
 
 			const_iterator begin() const{
 				p_node *tmp = _head;
-				return const_iterator(tmp->maximum(_head), _head);			
+				return const_iterator(tmp->minimum(_head), _head);
 			}
 
-			iterator end(){return iterator(NULL, _head);}
+			iterator end(){return iterator(_head->maximum(_head), _head);}
 
-			const_iterator end() const{return const_iterator(NULL, _head);}
+			const_iterator end() const{return const_iterator(_head->maximum(_head), _head);}
 
 			p_node newNode(const value& val){
 				p_node newNode = _node_alloc.allocate(1);
 				_node_alloc.construct(newNode, node_type(val));
+				newNode->_left = _nil;
+				newNode->_right = _nil;
+				newNode->_parent = _nil;
 				return newNode;
 			}
 
@@ -129,77 +146,131 @@ namespace ft{
 				return node->_color == RED;
 			}
 
+			p_node treeMin(p_node node){
+				while (node->_left != _nil){
+					node = node->_left;
+				}
+				return node;
+			}
+
+			p_node treeMax(p_node node){
+				while (node->_right != _nil){
+					node = node->_right;
+				}
+				return node;
+			}
+
 			void rotate_left(p_node node){
-				p_node grandp = node->_parent->_parent;
-				p_node parnt = node->_parent;
-				p_node tmp = node->_left;
-				if (grandp != NULL){
-					if (grandp->_left == parnt){
-						grandp->_left = node;
-					} else {
-						grandp->_right = node;
-					}
+				p_node tmp = node->_right;
+				node->_right = tmp->_left;
+				if (tmp->_left != _nil){
+					tmp->_left->_parent = node;
 				}
-				node->_parent = grandp;
-				parnt->_parent = node;
-				node->_left = parnt;
-				parnt->_right = tmp;
-				if (grandp == NULL){
-					_head = node;
+				tmp->_parent = node->_parent;
+				if (node->_parent == _nil){
+					_head = tmp;
+				} else if (node == node->_parent->_left){
+					node->_parent->_left = tmp;
+				} else {
+					node->_parent->_right = tmp;
 				}
+				tmp->_left = node;
+				node->_parent = tmp;
 			}
 
 			void rotate_right(p_node node){
-				p_node grandp = node->_parent->_parent;
-				p_node parnt = node->_parent;
-				p_node tmp = node->_right;
-				if (grandp != NULL){
-					if (grandp->_left == parnt){
-						grandp->_left = node;
-					} else {
-						grandp->_right = node;
-					}
+				p_node tmp = node->_left;
+				node->_left = tmp->_right;
+				if (tmp->_right != _nil){
+					tmp->_right->_parent = node;
 				}
-				node->_parent = grandp;
-				parnt->_parent = node;
-				node->_right = parnt;
-				parnt->_left = tmp;
-				if (grandp == NULL){
-					_head = node;
+				tmp->_parent = node->_parent;
+				if (node->_parent == _nil){
+					_head = tmp;
+				} else if (node == node->_parent->_right){
+					node->_parent->_right = tmp;
+				} else {
+					node->_parent->_left = tmp;
 				}
+				tmp->_right = node;
+				node->_parent = tmp;
 			}
 
-			// void balance(p_node node){
-
-			// }
-
-			pair<p_node, bool> insert_to_tree(p_node *tree, const value& key){
-				p_node parent;
-				if (*tree == NULL){
-					parent = NULL;
-				} else {
-					parent = (*tree)->_parent;
-				}
-				while (*tree != NULL){
-					if(_key_comp(key, (*tree)->_value)){
-						parent = *tree;
-						tree = &((*tree)->_left);
-					} else if (_key_comp((*tree)->_value, key)){
-						parent = *tree;
-						tree = &((*tree)->_right);
+			void balance(p_node node){
+               while (node->_parent->_color == RED){
+					if (node->_parent == node->_parent->_parent->_left){
+						p_node tmp = node->_parent->_parent->_right;
+						if (tmp->_color == RED){
+							node->_parent->_color = BLACK;
+							tmp->_color = BLACK;
+							node->_parent->_parent->_color = RED;
+							node = node->_parent->_parent;
+						} else {
+							if(node == node->_parent->_right){
+								node = node->_parent;
+								rotate_left(node);
+							}
+							node->_parent->_color = BLACK;
+							node->_parent->_parent->_color = RED;
+							rotate_right(node->_parent->_parent);
+						}
 					} else {
-						return ft::make_pair(*tree, false);
+						p_node tmp = node->_parent->_parent->_left;
+						if (tmp->_color == RED){
+							node->_parent->_color = BLACK;
+							tmp->_color = BLACK;
+							node->_parent->_parent->_color = RED;
+							node = node->_parent->_parent;
+						} else {
+							if(node == node->_parent->_left){
+								node = node->_parent;
+								rotate_right(node);
+							}
+							node->_parent->_color = BLACK;
+							node->_parent->_parent->_color = RED;
+							rotate_left(node->_parent->_parent);
+						}
+					}
+					_head->_color = BLACK;
+			   }
+			   
+			}
+
+			pair<p_node, bool> insert_to_tree(const value& key){
+				p_node parent = NULL;
+				p_node tmp = _head;
+				if (_head == NULL){
+					_head = newNode(key);
+					_head->_color = BLACK;
+					return ft::make_pair(_head, true);
+				}
+				while (tmp != _nil){
+					if (_key_comp(key, tmp->_value)){
+						parent = tmp;
+						tmp = tmp->_left;
+					} else if (_key_comp(tmp->_value, key)){
+						parent = tmp;
+						tmp = tmp->_right;
+					} else {
+						return ft::make_pair(_head, false);
 					}
 				}
-				*tree = newNode(key);
-				(*tree)->_parent = parent;
-				// balance(*tree);
+				tmp = newNode(key);
+				tmp->_parent = parent;
+				if (tmp->_value != _head->_value){
+					if (_key_comp(key, parent->_value)){
+						parent->_left = tmp;
+					} else if (_key_comp(parent->_value, key)){
+						parent->_right = tmp;
+					}
+				}
+				balance(tmp);
 				_size++;
-				return ft::make_pair(*tree, true);
+				return ft::make_pair(tmp, true);
 			}
 
 			pair<iterator, bool> insert(const value& val){
-				ft::pair<p_node, bool> tmp = insert_to_tree(&_head, val);
+				ft::pair<p_node, bool> tmp = insert_to_tree(val);
 				return ft::make_pair(iterator(tmp._first, _head), tmp._second);
 			}
 
@@ -258,223 +329,250 @@ namespace ft{
 				}
 				std::swap(a->_parent, b->_parent);
 			}
+
+
+			void transplant(p_node u, p_node v){
+				if (u->_parent == _nil){
+					_head = v;
+				} else if (u == u->_parent->_left){
+					u->_parent->_left = v;
+				} else {
+					u->_parent->_right = v;
+				}
+				v->_parent = u->_parent;
+			}
     
-		void eraseNode(p_node node){
-			p_node del = node;
-			if (node->_left && node->_right){
-				del = node->_right;
-				while (del->_left){
-					del = del->_left;
-				}
-				swapNode(node, del);
-				eraseNode(node);				
-			} else if (node->_left){
-				node->_left->_color = BLACK;
-				node->_left->_parent = node->_parent;
-				if (node->_parent){
-					if (node->_parent->_left == node){
-						node->_parent->_left = node->_left;
+			void eraseNode(p_node node){
+				p_node tmpX = NULL;
+				p_node tmpY = node;
+				nodeColor orig_tmp = tmpY->_color;
+				if (node->_left == _nil){
+					tmpX = node->_right;
+					transplant(node, node->_right);
+				} else if (node->_right == _nil){
+					tmpX = node->_left;
+					transplant(node, node->_left);
+				} else {
+					tmpY = treeMin(node->_right);
+					orig_tmp = tmpY->_color;
+					tmpX = tmpY->_right;
+					if (tmpY->_parent == node){
+						tmpX->_parent = tmpY;
 					} else {
-						node->_parent->_right = node->_left;
+						transplant(tmpY, tmpY->_right);
+						tmpY->_right = node->_right;
+						tmpY->_right->_parent = tmpY;
 					}
-				} else {
-					_head = node->_left;
+					transplant(node, tmpY);
+					tmpY->_left = node->_left;
+					tmpY->_left->_parent = tmpY;
+					tmpY->_color = node->_color;
 				}
-				deleteNode(del);
-				return;
-			} else if (node->_right){
-				node->_right->_color = BLACK;
-				node->_right->_parent = node->_parent;
-				if (node->_parent){
-					if (node->_parent->_right == node){
-						node->_parent->_right = node->_right;
-					} else{
-						node->_parent->_left = node->_right;
-					}
-				} else {
-					_head = node->_right;
-					deleteNode(del);
-					return;
+				if (orig_tmp == BLACK){
+					balanceEr(tmpX);
 				}
-			} else {
-				if (node->_color == RED){
-					p_node *tmp;
-					if (node->_parent->_right == node){
-						tmp = &node->_parent->_right;
-					} else {
-						tmp = &node->_parent->_left;
-					}
-					deleteNode(*tmp);
-					*tmp = NULL;
-				} else {
-					p_node *tmp;
-					// p_node parent = node->_parent;
-					if (node->_parent){
-						if (node->_parent->_right == node){
-							tmp = &node->_parent->_right;
+				deleteNode(node);
+			}
+
+			void balanceEr(p_node del){
+				while (del != _head && del->_color == BLACK){
+					if (del == del->_parent->_left){
+						p_node tmp = del->_parent->_right;
+						if (tmp->_color == RED){
+							tmp->_color = BLACK;
+							del->_parent->_color = RED;
+							rotate_left(del->_parent);
+							tmp = del->_parent->_right;
+						}
+						if (tmp->_left->_color == BLACK && tmp->_right->_color == BLACK){
+							tmp->_color = RED;
+							del = del->_parent;
 						} else {
-							tmp = &node->_parent->_left;
+							if (tmp->_right->_color == BLACK){
+								tmp->_left->_color = BLACK;
+								tmp->_color = RED;
+								rotate_right(tmp);
+								tmp = del->_parent->_right;
+							}
+						tmp->_color = del->_parent->_color;
+						del->_parent->_color = BLACK;
+						rotate_left(del->_parent);
+						del = _head;
 						}
 					} else {
-						tmp = &_head;
+						p_node tmp = del->_parent->_left;
+						if (tmp->_color == RED){
+							tmp->_color = BLACK;
+							del->_parent->_color = RED;
+							rotate_right(del->_parent);
+							tmp = del->_parent->_left;
+						}
+						if (tmp->_right->_color == BLACK && tmp->_left->_color == BLACK){
+							tmp->_color = RED;
+							del = del->_parent;
+						} else {
+							if (tmp->_left->_color == BLACK){
+								tmp->_right->_color = BLACK;
+								tmp->_color = RED;
+								rotate_left(tmp);
+								tmp = del->_parent->_left;
+							}
+							tmp->_color = del->_parent->_color;
+							del->_parent->_color = BLACK;
+							rotate_right(del->_parent);
+							del = _head;
+						}
 					}
-					deleteNode(*tmp);
-					*tmp = NULL;
-					// balanceEr(tmp, parent);
+				}
+				del->_color = BLACK;
+			}
+
+			void erase(iterator pos){
+				eraseNode(pos._node);
+			}
+
+			size_type erase(const value& key){
+				p_node node = findNode(key);
+				if (node){
+					eraseNode(node);
+					return 1;
+				}
+				return 0;
+			}
+
+			void erase(iterator first, iterator last){
+				for (; first != last; first++){
+					eraseNode(first.base);
 				}
 			}
-		}
 
-		void balanceEr(p_node *del, p_node parent){
-			
-		}
-
-		void erase(iterator pos){
-			eraseNode(pos._node);
-		}
-
-		size_type erase(const value& key){
-			p_node node = findNode(key);
-			if (node){
-				eraseNode(node);
-				return 1;
-			}
-			return 0;
-		}
-
-		void erase(iterator first, iterator last){
-			for (; first != last; first++){
-				eraseNode(first.base);
-			}
-		}
-
-		p_node findNode(const value& key) const{
-			p_node tmp = _head;
-			while (tmp != NULL){
-				if (_key_comp(key, tmp->_value)){
-					tmp = tmp->_left;
-				} else if (_key_comp(tmp->_value, key)){
-					tmp = tmp->_right;
-				} else {
-					return tmp;
+			p_node findNode(const value& key) const{
+				p_node tmp = _head;
+				while (tmp != NULL){
+					if (_key_comp(key, tmp->_value)){
+						tmp = tmp->_left;
+					} else if (_key_comp(tmp->_value, key)){
+						tmp = tmp->_right;
+					} else {
+						return tmp;
+					}
 				}
+				return NULL;
 			}
-			return NULL;
-		}
 
-		iterator find(const value& key){
-			return iterator(findNode(key), _head);
-		}
+			iterator find(const value& key){
+				return iterator(findNode(key), _head);
+			}
 
-		iterator lower_bound(const value& key){
-			p_node tmp = _head;
-			p_node res = NULL;
-			while (tmp != NULL){
-				if (_key_comp(key, tmp->_value)){
-					res = tmp;
-					tmp = tmp->_left;
-				} else if (!_key_comp(tmp->_value, key)){
-					res = tmp;
-					tmp = tmp->_left;
-				} else {
-					tmp = tmp->_right;
+			iterator lower_bound(const value& key){
+				p_node tmp = _head;
+				p_node res = NULL;
+				while (tmp != NULL){
+					if (_key_comp(key, tmp->_value)){
+						res = tmp;
+						tmp = tmp->_left;
+					} else if (!_key_comp(tmp->_value, key)){
+						res = tmp;
+						tmp = tmp->_left;
+					} else {
+						tmp = tmp->_right;
+					}
 				}
+				return iterator(tmp, _head);
 			}
-			return iterator(tmp, _head);
-		}
 
-		const_iterator lower_bound(const value& key) const{
-			p_node tmp = _head;
-			p_node res = NULL;
-			while (tmp != NULL){
-				if (_key_comp(key, tmp->_value)){
-					res = tmp;
-					tmp = tmp->_left;
-				} else if (!_key_comp(tmp->_value, key)){
-					res = tmp;
-					tmp = tmp->_left;
-				} else {
-					tmp = tmp->_right;
+			const_iterator lower_bound(const value& key) const{
+				p_node tmp = _head;
+				p_node res = NULL;
+				while (tmp != NULL){
+					if (_key_comp(key, tmp->_value)){
+						res = tmp;
+						tmp = tmp->_left;
+					} else if (!_key_comp(tmp->_value, key)){
+						res = tmp;
+						tmp = tmp->_left;
+					} else {
+						tmp = tmp->_right;
+					}
 				}
+				return const_iterator(tmp, _head);
 			}
-			return const_iterator(tmp, _head);
-		}
 
-		iterator upper_bound(const value& key){
-			p_node tmp = _head;
-			p_node res = NULL;
-			while (tmp != NULL){
-				if (_key_comp(key, tmp->_value)){
-					res = tmp;
-					tmp = tmp->_left;
-				} else {
-					tmp = tmp->_right;
+			iterator upper_bound(const value& key){
+				p_node tmp = _head;
+				p_node res = NULL;
+				while (tmp != NULL){
+					if (_key_comp(key, tmp->_value)){
+						res = tmp;
+						tmp = tmp->_left;
+					} else {
+						tmp = tmp->_right;
+					}
 				}
+				return iterator(tmp, _head);			
 			}
-			return iterator(tmp, _head);			
-		}
 
-		const_iterator upper_bound(const value& key) const{
-			p_node tmp = _head;
-			p_node res = NULL;
-			while (tmp != NULL){
-				if (_key_comp(key, tmp->_value)){
-					res = tmp;
-					tmp = tmp->_left;
-				} else {
-					tmp = tmp->_right;
+			const_iterator upper_bound(const value& key) const{
+				p_node tmp = _head;
+				p_node res = NULL;
+				while (tmp != NULL){
+					if (_key_comp(key, tmp->_value)){
+						res = tmp;
+						tmp = tmp->_left;
+					} else {
+						tmp = tmp->_right;
+					}
 				}
+				return const_iterator(tmp, _head);			
 			}
-			return const_iterator(tmp, _head);			
-		}
 
-		ft::pair<iterator, iterator> equal_range(const value& val){
-			return ft::make_pair(lower_bound(val), uper_bound(val));
-		}
-
-		ft::pair<const_iterator, const_iterator> equal_range(const value& val) const{
-			return ft::make_pair(lower_bound(val), uper_bound(val));
-		}
-
-		void deleteNode(p_node node){
-			_node_alloc.destroy(node);
-			_node_alloc.deallocate(node, 1);
-			_size--;
-		}
-
-		void clear(p_node node){
-			if (node == NULL){
-				return;
+			ft::pair<iterator, iterator> equal_range(const value& val){
+				return ft::make_pair(lower_bound(val), uper_bound(val));
 			}
-			clear(node->_right);
-			clear(node->_left);
-			deleteNode(node);
-		}
 
-		void clear_tree(){
-			clear(_head);
-			_head = NULL;
-		}
-
-		p_node getHead(){
-			return _head;
-		}
-
-		void printBT(const std::string& prefix, const p_node nodeV, bool isLeft) const {
-			std::cout << prefix;
-			std::cout << (isLeft ? "├──" : "└──" );
-			if (nodeV == NULL) {
-				std::cout <<"\033[0;36m"<< "nil" << "\033[0m"<<std::endl;
-				return ;
+			ft::pair<const_iterator, const_iterator> equal_range(const value& val) const{
+				return ft::make_pair(lower_bound(val), uper_bound(val));
 			}
-			// print the value of the node
-			if (nodeV->_color == BLACK)
-				std::cout <<"\033[0;36m"<< nodeV->_value._first<<"\033[0m"<<std::endl;
-			else
-				std::cout <<"\033[0;31m"<< nodeV->_value._first << "\033[0m"<<std::endl;
-			printBT( prefix + (isLeft ? "│   " : "    "), nodeV->_right, true);
-			printBT( prefix + (isLeft ? "│   " : "    "), nodeV->_left, false);
-		}
+
+			void deleteNode(p_node node){
+				_node_alloc.destroy(node);
+				_node_alloc.deallocate(node, 1);
+				_size--;
+			}
+
+			void clear(p_node node){
+				if (node == NULL || node == _nil){
+					return;
+				}
+				clear(node->_right);
+				clear(node->_left);
+				deleteNode(node);
+			}
+
+			void clear_tree(){
+				clear(_head);
+				_head = NULL;
+			}
+
+			p_node getHead(){
+				return _head;
+			}
+
+			void printBT(const std::string& prefix, const p_node nodeV, bool isLeft) const {
+				std::cout << prefix;
+				std::cout << (isLeft ? "├──" : "└──" );
+				if (nodeV == _nil) {
+					std::cout <<"\033[0;36m"<< "nil" << "\033[0m"<<std::endl;
+					return ;
+				}
+				// print the value of the node
+				if (nodeV->_color == BLACK)
+					std::cout <<"\033[0;36m"<< nodeV->_value._first<<"\033[0m"<<std::endl;
+				else
+					std::cout <<"\033[0;31m"<< nodeV->_value._first << "\033[0m"<<std::endl;
+				printBT( prefix + (isLeft ? "│   " : "    "), nodeV->_right, true);
+				printBT( prefix + (isLeft ? "│   " : "    "), nodeV->_left, false);
+			}
 	};
 }
 

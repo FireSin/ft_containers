@@ -29,7 +29,7 @@ namespace ft{
 	bool operator==(const pair<T1,T2>& lhs, const pair<T1,T2>& rhs){return (lhs._first == rhs._first && lhs._second == rhs._second);}
 
 	template< class T1, class T2 >
-	bool operator!=(const typename ft::pair<T1,T2>& lhs, const typename ft::pair<T1,T2>& rhs){return (!(lhs == rhs));}
+	bool operator!=(const ft::pair<T1,T2>& lhs, const ft::pair<T1,T2>& rhs){return (!(lhs == rhs));}
 
 	template< class T1, class T2 >
 	bool operator<(const ft::pair<T1,T2>& lhs, const ft::pair<T1,T2>& rhs){return (lhs._first < rhs._first || (!(rhs._first < lhs._first) && lhs._second < rhs._second));}
