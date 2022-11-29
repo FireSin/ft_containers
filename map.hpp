@@ -19,10 +19,11 @@ namespace ft{
 			typedef				value_type&                                 reference;
 			typedef typename	Allocator::pointer                          pointer;
 			typedef typename	Allocator::const_pointer                    const_pointer;
-			typedef    			ft::iterTree<Node<value_type> >             iterator;
-			typedef    			ft::iterTree<const Node<value_type> >       const_iterator;
-			typedef    			ft::reverse_iterTree<iterator>              rev_iterator;
-			typedef    			ft::reverse_iterTree<const iterator>        const_rev_iterator;
+			// typedef    			ft::iterTree<Node<value_type> >             iterator;
+			// typedef    			ft::iterTree<const Node<value_type> >       const_iterator;
+			// typedef    			ft::reverse_iterTree<iterator>              rev_iterator;
+			// typedef    			ft::reverse_iterTree<const iterator>        const_rev_iterator;
+			
 			
 			class value_compare{
 				template<class T1, class T2, class T3>
@@ -41,10 +42,15 @@ namespace ft{
 						return comp(lhs._first, rhs._first);
 					};
 			};
-			typedef typename Allocator::template rebind<ft::Node<value_type> >::other node_allocator_type;
-			typedef 			ft::rbTree<value_type, value_compare, node_allocator_type> rbtree;
+			
+			typedef typename		Allocator::template rebind<ft::Node<value_type> >::other node_allocator_type;
+			typedef					ft::rbTree<value_type, value_compare, node_allocator_type> rbtree;
+			typedef typename		rbtree::iterator				iterator;
+			typedef typename		rbtree::const_iterator			const_iterator;
+			typedef typename		rbtree::r_iterator				rev_iterator;
+			typedef typename		rbtree::const_r_iterator		const_rev_iterator;
         private:
-            rbtree       _data;
+            rbtree      	_data;
             allocator_type  _alloc;
             key_compare     _compare;
             value_compare   _val_compare;
@@ -62,13 +68,27 @@ namespace ft{
 				return *this;
 			}
 
-			iterator end(){return _data.end();}
-			iterator begin(){return _data.begin();}
-			iterator cend(){return _data.cend();}
-			iterator cbegin(){return _data.cbegin();}
-			rev_iterator rbegin(){}
+			iterator			end(){return _data.end();}
+			iterator			begin(){return _data.begin();}
+			const_iterator		cend() const{return _data.cend();}
+			const_iterator		cbegin() const{return _data.cbegin();}
+			rev_iterator 		rbegin(){return _data.rbegin();}
+			rev_iterator 		rend(){return _data.rend();}
+			const_rev_iterator	const_rbegin() const{return _data.const_rbegin();}
+			const_rev_iterator	const_rend() const{return _data.const_rend();}
 
-            allocator_type get_allocator() const{return _alloc;};
+            allocator_type 		get_allocator() const{return _alloc;}
+			size_type			size() const{return _data._size;}
+			bool				empty() const{return _data.empty();}
+			size_type			max_size() const{return _data.max_size();}
+			void				clear(){_data.clear_tree();}
+			iterator			erase(iterator pos){
+				iterator tmp = pos;
+				pos++;
+				_data.erase(tmp);
+				return pos;
+			}
+
 
 			void insert (iterator position, const value_type& val)
 			{

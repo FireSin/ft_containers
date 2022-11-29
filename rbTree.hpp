@@ -62,8 +62,8 @@ namespace ft{
         typedef typename 	node_alloc::pointer							p_node;
 		typedef				ft::iterTree<node_type>						iterator;
 		typedef				ft::iterTree<const node_type>				const_iterator;
-		typedef				ft::reverse_iterTree<node_type>				r_iterator;
-		typedef				ft::reverse_iterTree<const node_type>		const_r_iterator;
+		typedef				ft::reverse_iterator<iterator>				r_iterator;
+		typedef				ft::reverse_iterator<const_iterator>		const_r_iterator;
 
 		private:
 			p_node			_head;
@@ -100,7 +100,7 @@ namespace ft{
             return nil;
 			}
 
-			bool empty(){return _size == 0};
+			bool empty(){return _size == 0;}
 
 			size_type size(){return _size;}
 
@@ -109,11 +109,14 @@ namespace ft{
 			iterator begin(){return iterator(treeMin(_head), _head);}
 			iterator end(){return iterator(_nil, _head);}
 
-			r_iterator rbegin(){return r_iterator(treeMax(_head), _head);}
-			r_iterator rend(){return r_iterator(_nil, _head);}
+			r_iterator rbegin(){return r_iterator(--end());}
+			r_iterator rend(){return r_iterator(end());}
 
 			const_iterator cbegin() const{return const_iterator(const_treeMin(_head), _head);}
 			const_iterator cend() const{return const_iterator(_nil, _head);}
+
+			const_r_iterator const_rbegin() const{return const_r_iterator(--cend());}
+			const_r_iterator const_rend() const{return const_r_iterator(cend());}
 
 			p_node newNode(const value& val){
 				p_node newNode = _node_alloc.allocate(1);
@@ -428,7 +431,7 @@ namespace ft{
 			}
 
 			void erase(iterator pos){
-				eraseNode(pos._node);
+				eraseNode(pos.base());
 			}
 
 			size_type erase(const value& key){
@@ -467,13 +470,10 @@ namespace ft{
 
 			iterator lower_bound(const value& key){
 				p_node tmp = _head;
-				// p_node res;
 				while (tmp != NULL){
 					if (_key_comp(key, tmp->_value)){
-						// p_node res = tmp;
 						tmp = tmp->_left;
 					} else if (!_key_comp(tmp->_value, key)){
-						// p_node res = tmp;
 						tmp = tmp->_left;
 					} else {
 						tmp = tmp->_right;
@@ -484,13 +484,10 @@ namespace ft{
 
 			const_iterator lower_bound(const value& key) const{
 				p_node tmp = _head;
-				p_node res = NULL;
 				while (tmp != NULL){
 					if (_key_comp(key, tmp->_value)){
-						res = tmp;
 						tmp = tmp->_left;
 					} else if (!_key_comp(tmp->_value, key)){
-						res = tmp;
 						tmp = tmp->_left;
 					} else {
 						tmp = tmp->_right;
@@ -501,10 +498,8 @@ namespace ft{
 
 			iterator upper_bound(const value& key){
 				p_node tmp = _head;
-				p_node res = NULL;
 				while (tmp != NULL){
 					if (_key_comp(key, tmp->_value)){
-						res = tmp;
 						tmp = tmp->_left;
 					} else {
 						tmp = tmp->_right;
@@ -515,10 +510,8 @@ namespace ft{
 
 			const_iterator upper_bound(const value& key) const{
 				p_node tmp = _head;
-				p_node res = NULL;
 				while (tmp != NULL){
 					if (_key_comp(key, tmp->_value)){
-						res = tmp;
 						tmp = tmp->_left;
 					} else {
 						tmp = tmp->_right;

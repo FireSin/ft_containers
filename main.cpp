@@ -142,6 +142,10 @@ int main() {
 	m.printTree();
 	m.insert(m.begin(), ft::pair<int, std::string>(5, "zsd"));
 	m.printTree();
+	ft::map<int, std::string>::iterator i = m.begin();
+	std::cout << m.erase(i)->_first << std::endl;
+	m.printTree();
+	
 	// std::map<int, std::string> m;
 	// m.insert(std::pair<int, std::string>(2, "asd"));
 	// m.insert(std::pair<int, std::string>(3, "asd"));
