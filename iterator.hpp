@@ -16,6 +16,7 @@ namespace ft{
 			typedef	typename	ft::iterator_traits<T*>::reference			reference;
 			typedef	typename	ft::iterator_traits<T*>::difference_type	difference_type;
 			typedef				std::random_access_iterator_tag				iterator_category;
+			
 		private:
 			pointer _ptr;
 		public:

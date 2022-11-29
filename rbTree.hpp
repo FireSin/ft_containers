@@ -13,6 +13,10 @@ namespace ft{
 	template<class T>
 	struct Node
 	{
+		typedef typename T::first_type  Key;
+        typedef typename T::second_type Val;
+        typedef T pair_type;
+		
 		T			_value;
 		Node*		_parent;
 		Node*		_left;
@@ -21,9 +25,6 @@ namespace ft{
 
 		Node(): _value(T()), _parent(NULL), _left(NULL), _right(NULL), _color(RED){}
 		Node(const T& val): _value(val), _parent(NULL), _left(NULL), _right(NULL), _color(RED){}
-		Node( Node const & other) {
-			*this = other;
-		}
 
 		Node& operator=(const Node& other){
 			this->_value = other._value;
@@ -35,13 +36,13 @@ namespace ft{
 		}
 
 		Node* maximum(Node* lst){
-			while (lst && lst->_right != NULL)
+			while (lst && lst->_right != NULL && lst->_right->_right != NULL)
 				lst = lst->_right;
 			return lst;
 		}
 
 		Node* minimum(Node* lst){
-			while (lst && lst->_left != NULL)
+			while (lst && lst->_left != NULL && lst->_left->_left != NULL)
 				lst = lst->_left;
 			return lst;
 		}
@@ -61,6 +62,8 @@ namespace ft{
         typedef typename 	node_alloc::pointer							p_node;
 		typedef				ft::iterTree<node_type>						iterator;
 		typedef				ft::iterTree<const node_type>				const_iterator;
+		typedef				ft::reverse_iterTree<node_type>				r_iterator;
+		typedef				ft::reverse_iterTree<const node_type>		const_r_iterator;
 
 		private:
 			p_node			_head;
@@ -70,18 +73,16 @@ namespace ft{
 			p_node			_nil;
 		
 		public:
-			rbTree(): _head(NULL), _size(0), _nil(initNil()){}
-			explicit rbTree(const key_compare& comp, const node_alloc& allc = node_alloc()):
-				_head(NULL), _node_alloc(allc), _key_comp(comp), _size(0), _nil(initNil()) {}
+			rbTree(const key_compare& comp = Compare(), const node_alloc& allc = node_alloc()):	_head(NULL), _key_comp(comp), _node_alloc(allc), _size(0), _nil(initNil()) {}
+
 			rbTree(const rbTree& other): _head(NULL), _node_alloc(other._node_alloc), _key_comp(other._key_comp){
-				copyRBTree(_head, NULL, other._head);
-				_size = other._size;
+				*this = other;
 			}
 			rbTree& operator=(const rbTree& other){
-				p_node tmp = NULL;
-				copyRBTree(tmp, NULL, other._head);
 				clear(_head);
-				_head = tmp;
+				for (const_iterator i = other.cbegin(); i != other.cend(); i++){
+					insert(i.base()->_value);
+				}
 				_size = other._size;
 				return *this;
 			}
@@ -99,26 +100,20 @@ namespace ft{
             return nil;
 			}
 
+			bool empty(){return _size == 0};
+
 			size_type size(){return _size;}
 
 			size_type max_size(){return node_alloc().max_size();}
 
-			iterator begin(){
-				p_node tmp = _head;
-				while (tmp->_left && tmp->_left != _nil){
-					tmp = tmp->_left;
-				}
-				return iterator(tmp, _head);				
-			}
+			iterator begin(){return iterator(treeMin(_head), _head);}
+			iterator end(){return iterator(_nil, _head);}
 
-			const_iterator begin() const{
-				p_node *tmp = _head;
-				return const_iterator(tmp->minimum(_head), _head);
-			}
+			r_iterator rbegin(){return r_iterator(treeMax(_head), _head);}
+			r_iterator rend(){return r_iterator(_nil, _head);}
 
-			iterator end(){return iterator(_head->maximum(_head), _head);}
-
-			const_iterator end() const{return const_iterator(_head->maximum(_head), _head);}
+			const_iterator cbegin() const{return const_iterator(const_treeMin(_head), _head);}
+			const_iterator cend() const{return const_iterator(_nil, _head);}
 
 			p_node newNode(const value& val){
 				p_node newNode = _node_alloc.allocate(1);
@@ -127,16 +122,6 @@ namespace ft{
 				newNode->_right = _nil;
 				newNode->_parent = _nil;
 				return newNode;
-			}
-
-			void copyRBTree(p_node *&current, p_node curr_parent, p_node other_node){
-				if (other_node == NULL){
-					return ;
-				}
-				current = newNode(other_node->_value);
-				current->_parent = curr_parent;
-				copyRBTree(current->_left, current, other_node->_left);
-				copyRBTree(current->_right, current, other_node->_right);
 			}
 
 			bool is_Red(p_node node){
@@ -154,6 +139,20 @@ namespace ft{
 			}
 
 			p_node treeMax(p_node node){
+				while (node->_right != _nil){
+					node = node->_right;
+				}
+				return node;
+			}
+
+			const p_node const_treeMin(p_node node) const{
+				while (node->_left != _nil){
+					node = node->_left;
+				}
+				return node;
+			}
+
+			const p_node const_treeMax(p_node node) const{
 				while (node->_right != _nil){
 					node = node->_right;
 				}
@@ -236,13 +235,14 @@ namespace ft{
 			   
 			}
 
-			pair<p_node, bool> insert_to_tree(const value& key){
+			pair<p_node, bool> insert_to_tree(const value& key, p_node* head){
 				p_node parent = NULL;
-				p_node tmp = _head;
-				if (_head == NULL){
-					_head = newNode(key);
-					_head->_color = BLACK;
-					return ft::make_pair(_head, true);
+				p_node tmp = *head;
+				if (*head == NULL){
+					*head = newNode(key);
+					(*head)->_color = BLACK;
+					_size++;
+					return ft::make_pair(*head, true);
 				}
 				while (tmp != _nil){
 					if (_key_comp(key, tmp->_value)){
@@ -252,7 +252,7 @@ namespace ft{
 						parent = tmp;
 						tmp = tmp->_right;
 					} else {
-						return ft::make_pair(_head, false);
+						return ft::make_pair(*head, false);
 					}
 				}
 				tmp = newNode(key);
@@ -270,26 +270,26 @@ namespace ft{
 			}
 
 			pair<iterator, bool> insert(const value& val){
-				ft::pair<p_node, bool> tmp = insert_to_tree(val);
+				ft::pair<p_node, bool> tmp = insert_to_tree(val, &_head);
 				return ft::make_pair(iterator(tmp._first, _head), tmp._second);
 			}
 
 			iterator insert(iterator hint, const value& val){
 				if (hint == lower_bound(val)){
 					p_node node = newNode(val);
-					(*hint)->_right = node;
-					node->_parent = hint;
+					hint.base()->_right = node;
+					node->_parent = hint.base();
 					balance(node);
 					return iterator(node, _head);
 				}
-				ft::pair<p_node, bool> tmp  = insert_to_tree(&_head, val);
-				return iterator(tmp._first);
+				ft::pair<p_node, bool> tmp  = insert_to_tree(val, &_head);
+				return iterator(tmp._first, _head);
 			}
 
 			template <class InputIterator>
 			void insert(InputIterator first, InputIterator last){
-				for (InputIterator i = first; i != last; ++i){
-					insert(*i);
+				for (InputIterator i = first; i != last; i++){
+					insert(i.base()->_value);
 				}
 			}
 
@@ -464,15 +464,16 @@ namespace ft{
 				return iterator(findNode(key), _head);
 			}
 
+
 			iterator lower_bound(const value& key){
 				p_node tmp = _head;
-				p_node res = NULL;
+				// p_node res;
 				while (tmp != NULL){
 					if (_key_comp(key, tmp->_value)){
-						res = tmp;
+						// p_node res = tmp;
 						tmp = tmp->_left;
 					} else if (!_key_comp(tmp->_value, key)){
-						res = tmp;
+						// p_node res = tmp;
 						tmp = tmp->_left;
 					} else {
 						tmp = tmp->_right;
@@ -535,7 +536,9 @@ namespace ft{
 			}
 
 			void deleteNode(p_node node){
-				_node_alloc.destroy(node);
+				if (node != _nil){
+					_node_alloc.destroy(node);
+				}
 				_node_alloc.deallocate(node, 1);
 				_size--;
 			}

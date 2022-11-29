@@ -11,15 +11,12 @@ namespace ft{
 
 		first_type	_first;
 		second_type	_second;
-		pair():_first(), _second(){};
+
+		pair(){};
 		pair(const first_type& x, const second_type& y):_first(x), _second(y){};
 		template<class U, class V>
-		pair(const pair<U,V>& pr){*this = pr;};
-		pair& operator=(const pair& other){
-			this->_first = other._first;
-			this->_second = other._second;
-			return *this;
-		};
+		pair(const pair<U,V>& pr): _first(pr._first), _second(pr._second){};
+		~pair(){};
 	};
 
 	template <class T1,class T2>

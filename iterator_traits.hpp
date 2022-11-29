@@ -1,6 +1,8 @@
 #ifndef ITERATOR_TRAITS_HPP
 #define ITERATOR_TRAITS_HPP
 
+#include <cstddef>
+
 namespace ft{
 
 	struct input_iterator_tag { };
@@ -35,6 +37,7 @@ namespace ft{
 		typedef const T&						reference;
 		typedef std::random_access_iterator_tag	iterator_category;
     };
+
 }
 
 #endif

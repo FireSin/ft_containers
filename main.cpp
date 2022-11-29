@@ -107,27 +107,51 @@
 #include <map>
 #include "rbTree.hpp"
 #include "pair.hpp"
+#include "map.hpp"
 
 int main() {
-	ft::rbTree<ft::pair<int, std::string> > a;
-	a.insert(ft::pair<int, std::string>(2, "asd"));
-	a.printBT(" ", a.getHead(), false);
-	a.insert(ft::pair<int, std::string>(3, "asd"));
-	a.printBT(" ", a.getHead(), false);
-	a.insert(ft::pair<int, std::string>(4, "asd"));
-	a.printBT(" ", a.getHead(), false);
-	a.insert(ft::pair<int, std::string>(5, "asd"));
-	a.printBT(" ", a.getHead(), false);
-	a.insert(ft::pair<int, std::string>(6, "asd"));
-	a.printBT(" ", a.getHead(), false);
-	a.insert(ft::pair<int, std::string>(7, "asd"));
-	a.printBT(" ", a.getHead(), false);
-	a.insert(ft::pair<int, std::string>(8, "asd"));
-	a.printBT(" ", a.getHead(), false);
-	a.erase(ft::pair<int, std::string>(2, "asd"));
-	a.printBT(" ", a.getHead(), false);
-	// for (ft::rbTree<ft::pair<int, std::string> >::iterator i = a.begin(); i != a.end(); i++){
+	// ft::rbTree<ft::pair<int, std::string> > a;
+	// a.insert(ft::pair<int, std::string>(2, "asd"));
+	// a.insert(ft::pair<int, std::string>(3, "bsd"));
+	// a.insert(ft::pair<int, std::string>(4, "csd"));
+	// a.insert(ft::pair<int, std::string>(5, "fsd"));
+	// a.insert(ft::pair<int, std::string>(6, "dsd"));
+	// a.insert(ft::pair<int, std::string>(7, "esd"));
+	// a.insert(ft::pair<int, std::string>(8, "jsd"));
+	// // a.erase(ft::pair<int, std::string>(2, "asd"));
+	// a.printBT(" ", a.getHead(), false);
+	// a.find(3);
+	// ft::rbTree<ft::pair<int, std::string> >::const_iterator i = a.cbegin();
+	// ft::rbTree<ft::pair<int, std::string> >::const_iterator ie = a.cend();
+	// ft::rbTree<ft::pair<int, std::string> > b;
+	// b = a;
+	// b.printBT(" ", b.getHead(), false);
+	// for (; i != ie; ++i){
 	// 	std::cout << i.base()->_value._first << std::endl;
 	// }
+	ft::map<int, std::string> m;
+	m.insert(ft::pair<int, std::string>(2, "asd"));
+	m.insert(ft::pair<int, std::string>(3, "bsd"));
+	m.insert(ft::pair<int, std::string>(4, "csd"));
+	m.insert(ft::pair<int, std::string>(6, "dsd"));
+	m.insert(ft::pair<int, std::string>(7, "esd"));
+	m.insert(ft::pair<int, std::string>(8, "fsd"));
+	m.insert(ft::pair<int, std::string>(9, "gsd"));
+	ft::map<int, std::string>::iterator s = m.end();
+	s--;
+	m.printTree();
+	m.insert(m.begin(), ft::pair<int, std::string>(5, "zsd"));
+	m.printTree();
+	// std::map<int, std::string> m;
+	// m.insert(std::pair<int, std::string>(2, "asd"));
+	// m.insert(std::pair<int, std::string>(3, "asd"));
+	// m.insert(std::pair<int, std::string>(4, "asd"));
+	// m.insert(std::pair<int, std::string>(5, "asd"));
+	// m.insert(std::pair<int, std::string>(6, "asd"));
+	// m.insert(std::pair<int, std::string>(7, "asd"));
+	// m.insert(std::pair<int, std::string>(8, "asd"));
+	// std::map<int, std::string>::iterator s = m.end();
+	// m.insert(s, std::pair<int, std::string>(15, "zsd"));
+
 	return 0;
 }
