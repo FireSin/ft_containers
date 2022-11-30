@@ -13,8 +13,6 @@ namespace ft{
 	template<class T>
 	struct Node
 	{
-		typedef typename T::first_type  Key;
-        typedef typename T::second_type Val;
         typedef T pair_type;
 		
 		T			_value;
@@ -75,7 +73,7 @@ namespace ft{
 		public:
 			rbTree(const key_compare& comp = Compare(), const node_alloc& allc = node_alloc()):	_head(NULL), _key_comp(comp), _node_alloc(allc), _size(0), _nil(initNil()) {}
 
-			rbTree(const rbTree& other): _head(NULL), _node_alloc(other._node_alloc), _key_comp(other._key_comp){
+			rbTree(const rbTree& other): _head(NULL), _key_comp(other._key_comp), _node_alloc(other._node_alloc){
 				*this = other;
 			}
 			rbTree& operator=(const rbTree& other){
@@ -100,9 +98,9 @@ namespace ft{
             return nil;
 			}
 
-			bool empty(){return _size == 0;}
+			bool empty() const{return _size == 0;}
 
-			size_type size(){return _size;}
+			size_type size() const{return _size;}
 
 			size_type max_size(){return node_alloc().max_size();}
 
@@ -272,7 +270,7 @@ namespace ft{
 				return ft::make_pair(tmp, true);
 			}
 
-			pair<iterator, bool> insert(const value& val){
+			ft::pair<iterator, bool> insert(const value& val){
 				ft::pair<p_node, bool> tmp = insert_to_tree(val, &_head);
 				return ft::make_pair(iterator(tmp._first, _head), tmp._second);
 			}
@@ -296,43 +294,50 @@ namespace ft{
 				}
 			}
 
-			void swapNode(p_node a, p_node b){
-				std::swap(a->_color, b->_color);
-				if (a->_left){
-					a->_left->_parent = b;
-				}
-				if (b->_left){
-					b->_left->_parent = a;
-				}
-				std::swap(a->_left, b->_left);
-				if (a->_right){
-					a->_right->_parent = b;
-				}
-				if (b->_right){
-					b->_right->_parent = a;
-				}
-				std::swap(a->_right, b->_right);
-				if (a->_parent){
-					if (a->_parent->_left == a){
-						a->_parent->_left = b;
-					} else {
-						a->_parent->_right = b;
-					}
-				} else {
-					_head = b;
-				}
-				if (b->_parent){
-					if (b->_parent->_left == b){
-						b->_parent->_left = a;
-					} else {
-						b->_parent->_right = a;
-					}
-				} else{
-					_head = a;
-				}
-				std::swap(a->_parent, b->_parent);
-			}
+			// void swapNode(p_node a, p_node b){
+			// 	std::swap(a->_color, b->_color);
+			// 	if (a->_left){
+			// 		a->_left->_parent = b;
+			// 	}
+			// 	if (b->_left){
+			// 		b->_left->_parent = a;
+			// 	}
+			// 	std::swap(a->_left, b->_left);
+			// 	if (a->_right){
+			// 		a->_right->_parent = b;
+			// 	}
+			// 	if (b->_right){
+			// 		b->_right->_parent = a;
+			// 	}
+			// 	std::swap(a->_right, b->_right);
+			// 	if (a->_parent){
+			// 		if (a->_parent->_left == a){
+			// 			a->_parent->_left = b;
+			// 		} else {
+			// 			a->_parent->_right = b;
+			// 		}
+			// 	} else {
+			// 		_head = b;
+			// 	}
+			// 	if (b->_parent){
+			// 		if (b->_parent->_left == b){
+			// 			b->_parent->_left = a;
+			// 		} else {
+			// 			b->_parent->_right = a;
+			// 		}
+			// 	} else{
+			// 		_head = a;
+			// 	}
+			// 	std::swap(a->_parent, b->_parent);
+			// }
 
+			void swap(rbTree &other){
+				std::swap(_head, other._head);
+				std::swap(_key_comp, other._key_comp);
+				std::swap(_node_alloc, other._node_alloc);
+				std::swap(_size, other._size);
+				std::swap(_nil, other._nil);
+			}
 
 			void transplant(p_node u, p_node v){
 				if (u->_parent == _nil){
@@ -397,10 +402,11 @@ namespace ft{
 								rotate_right(tmp);
 								tmp = del->_parent->_right;
 							}
-						tmp->_color = del->_parent->_color;
-						del->_parent->_color = BLACK;
-						rotate_left(del->_parent);
-						del = _head;
+							tmp->_color = del->_parent->_color;
+							del->_parent->_color = BLACK;
+							tmp->_right->_color = BLACK;
+							rotate_left(del->_parent);
+							del = _head;
 						}
 					} else {
 						p_node tmp = del->_parent->_left;
@@ -422,6 +428,7 @@ namespace ft{
 							}
 							tmp->_color = del->_parent->_color;
 							del->_parent->_color = BLACK;
+							tmp->_left->_color = BLACK;
 							rotate_right(del->_parent);
 							del = _head;
 						}
@@ -467,61 +474,72 @@ namespace ft{
 				return iterator(findNode(key), _head);
 			}
 
+			const_iterator find(const value& key) const{
+				return const_iterator(findNode(key), _head);
+			}
 
 			iterator lower_bound(const value& key){
 				p_node tmp = _head;
-				while (tmp != NULL){
+				p_node res = NULL;
+				while (tmp != _nil){
 					if (_key_comp(key, tmp->_value)){
+						res = tmp;
 						tmp = tmp->_left;
 					} else if (!_key_comp(tmp->_value, key)){
-						tmp = tmp->_left;
+						return iterator(tmp, _head);
 					} else {
 						tmp = tmp->_right;
 					}
 				}
-				return iterator(tmp, _head);
+				return iterator(res, _head);
 			}
 
 			const_iterator lower_bound(const value& key) const{
 				p_node tmp = _head;
-				while (tmp != NULL){
+				p_node res = NULL;
+				while (tmp != _nil){
 					if (_key_comp(key, tmp->_value)){
+						res = tmp;
 						tmp = tmp->_left;
 					} else if (!_key_comp(tmp->_value, key)){
-						tmp = tmp->_left;
+						return const_iterator(tmp, _head);
 					} else {
 						tmp = tmp->_right;
 					}
 				}
-				return const_iterator(tmp, _head);
+				return const_iterator(res, _head);
 			}
 
 			iterator upper_bound(const value& key){
 				p_node tmp = _head;
-				while (tmp != NULL){
+				p_node res = NULL;
+				while (tmp != _nil){
 					if (_key_comp(key, tmp->_value)){
+						res = tmp;
 						tmp = tmp->_left;
 					} else {
 						tmp = tmp->_right;
 					}
 				}
-				return iterator(tmp, _head);			
+				return iterator(res, _head);		
 			}
 
 			const_iterator upper_bound(const value& key) const{
 				p_node tmp = _head;
-				while (tmp != NULL){
+				p_node res = NULL;
+				while (tmp != _nil){
 					if (_key_comp(key, tmp->_value)){
+						res = tmp;
 						tmp = tmp->_left;
 					} else {
 						tmp = tmp->_right;
 					}
 				}
-				return const_iterator(tmp, _head);			
+				return const_iterator(res, _head);			
 			}
 
 			ft::pair<iterator, iterator> equal_range(const value& val){
-				return ft::make_pair(lower_bound(val), uper_bound(val));
+				return ft::make_pair(lower_bound(val), upper_bound(val));
 			}
 
 			ft::pair<const_iterator, const_iterator> equal_range(const value& val) const{
@@ -570,6 +588,20 @@ namespace ft{
 				printBT( prefix + (isLeft ? "│   " : "    "), nodeV->_left, false);
 			}
 	};
+	template<class RBTree>
+	bool operator<(const RBTree& lhs, const RBTree& rhs){
+		return (ft::lexicographical_compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend()));
+	}
+
+	template<class RBTree>
+	bool operator>(const RBTree& lhs, const RBTree& rhs){
+		return (lhs < rhs);
+	}
+
+	template<class RBTree>
+	bool operator==(const RBTree& lhs, const RBTree& rhs){
+		return (lhs.size() == rhs.size() && ft::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin()));
+	}
 }
 
 #endif
