@@ -1,7 +1,7 @@
 #ifndef STACK_HPP
 #define STACK_HPP
 
-#include "vector.hpp"
+#include "containers.hpp"
 
 namespace ft{
 	template <class T, class Container = ft::vector<T> >
@@ -26,8 +26,8 @@ namespace ft{
 		
 		reference		top(){return _mas.back();}
 		const_reference	top() const{return _mas.back();}
-		bool			empty() const{return _mas.empty();}
-		size_type		size() const{return _mas.size();}
+		bool			empty() {return _mas.empty();}
+		size_type		size() {return _mas.size();}
 		void			push(const value_type& value){_mas.push_back(value);}
 		void			pop(){_mas.pop_back();}
 	

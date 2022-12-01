@@ -1,11 +1,7 @@
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
-#include <iostream>
-#include <string>
-#include <memory>
-#include "iterator.hpp"
-#include "algorithm.hpp"
+#include "containers.hpp"
 
 namespace ft{
 	template<typename T, typename Allocator = std::allocator<T> >
@@ -130,9 +126,9 @@ namespace ft{
 		const_iterator			cend() const{
 			return const_iterator(this->_mas + this->_size);
 		}
-		reverse_iterator		rbegin(){return reverse_iterator(end());}
+		reverse_iterator		rbegin(){return reverse_iterator(--end());}
 		reverse_iterator		rend(){return reverse_iterator(begin());}
-		const_reverse_iterator	crbegin() const {return const_reverse_iterator(cend());}
+		const_reverse_iterator	crbegin() const {return const_reverse_iterator(--cend());}
 		const_reverse_iterator	crend() const {return const_reverse_iterator(cbegin());}
 		reference				front(){return *(this->begin());}
 		const_reference			front() const{return *(this->cbegin());}
@@ -237,8 +233,7 @@ namespace ft{
 					for (size_type i = 0; i < _size; i++)
 						_alloc.destroy(_mas + i);
 					_alloc.deallocate(_mas, _capacity);
-					_mas = new_mas;
-					_size = _size + count;
+					_mas = new_mas;	
 				}
 				else{
 					for (size_type i = _size; i > n; i--) {
@@ -248,6 +243,7 @@ namespace ft{
 						_alloc.construct(_mas + n + i, value);
 					}
 				}
+				_size = _size + count;
 			}
 			catch(...)
 			{

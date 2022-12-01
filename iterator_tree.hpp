@@ -1,8 +1,7 @@
 #ifndef ITERATOR_TREE_HPP
 #define ITERATOR_TREE_HPP
 
-#include "rbTree.hpp"
-#include "iterator_traits.hpp"
+#include "containers.hpp"
 
 namespace ft{
 
@@ -35,10 +34,10 @@ namespace ft{
 
 		pointer const base() const {return _node;}
 
-		pair_type		operator*() const{return _node->_value;}
-		pair_type*		operator->() const{return &(_node->_value);}
+		pair_type		operator*(){return _node->_value;}
+		pair_type*		operator->(){return &(_node->_value);}
 		iterTree		operator++() { //preincrement
-			if (!_head || !_head->_parent){
+			if (!_head || !_head->_parent || !_node){
 				return *this;
 			}
 			if (_node->_right != _head->_parent){
@@ -97,57 +96,61 @@ namespace ft{
 	template <class T>  bool operator>  (const iterTree<T>& lhs, const iterTree<T>& rhs){return lhs.base() > rhs.base();};
 	template <class T>  bool operator>= (const iterTree<T>& lhs, const iterTree<T>& rhs){return lhs.base() >= rhs.base();};
 
+	template <class Iterator>
+	class reverse_iterator_tree
+	{
+		public:
+			typedef				Iterator												iterator_type;
+			typedef	typename	ft::iterator_traits<iterator_type>::value_type			value_type;
+			typedef	typename	ft::iterator_traits<iterator_type>::pointer				pointer;
+			typedef	typename	ft::iterator_traits<iterator_type>::reference			reference;
+			typedef	typename	ft::iterator_traits<iterator_type>::difference_type		difference_type;
+			typedef typename	value_type::pair_type									pair_type;
+		private:
+			iterator_type	r_iter;
+		public:
+			reverse_iterator_tree():r_iter(){};
+			explicit reverse_iterator_tree(const iterator_type& other):r_iter(other){};
+			template <class Iterat>
+			reverse_iterator_tree (const reverse_iterator_tree<Iterat>& other){
+				r_iter = other.r_iter;
+			}
+			
+			iterator_type base() const{return (r_iter);}
 
-	// template <class Iter>
-	// class reverse_iterTree
-	// {
-	// 	public:		
-	// 		typedef Iter iterator_type;
-	// 		typedef typename iterator_type::reference reference;
-	// 		typedef typename iterator_type::pointer pointer;
-	// 		typedef typename iterator_type::difference_type difference_type;
-	// 	private:
-	// 		iterator_type r_iter;
-	// 	public:
-	// 	reverse_iterTree(): r_iter(){};
-	// 	explicit reverse_iterTree(iterator_type other): r_iter(other){};
-	// 	template <class It>
-	// 	reverse_iterTree (const reverse_iterTree<It>& other){
-	// 		r_iter = other.r_iter;
-	// 	}
-	// 	virtual ~reverse_iterTree(){};
+			reverse_iterator_tree operator++(){
+				reverse_iterator_tree tmp(*this);
+				this->r_iter--;
+				return tmp;
+			}
+			reverse_iterator_tree&  operator++(int){
+				--this->r_iter;
+				return *this;
+			}
+			reverse_iterator_tree operator--(){
+				reverse_iterator_tree tmp(*this);
+				this->r_iter++;
+				return tmp;
+			}
+			reverse_iterator_tree&  operator--(int){
+				this->r_iter++;
+				return *this;
+			}
 
-	// 	iterator_type base() const {return r_iter;}
+        	pair_type operator*(){
+				return *r_iter;
+			}
+			iterator_type operator->(){
+				return r_iter;
+			}
+	};
 
-	// 	iterator_type			operator->() const{return *r_iter;}
-	// 	reference				operator*() {return r_iter;}
-
-	// 	reverse_iterTree&	operator--() { //preincrement
-	// 		reverse_iterTree tmp(*this);
-	// 		this->r_iter++;
-	// 		return(tmp);
-	// 	}
-	// 	reverse_iterTree	operator--(int){ //postincrement
-	// 		this->r_iter++;
-	// 		return(*this);
-	// 	}
-	// 	reverse_iterTree&	operator++() { //preincrement
-	// 		reverse_iterTree tmp(*this);
-	// 		this->r_iter--;
-	// 		return(tmp);
-	// 	}
-	// 	reverse_iterTree		operator++(int){ //postincrement
-	// 		this->r_iter--;
-	// 		return(*this);
-	// 	}
-		
-	// };
-	// template <class T>  bool operator== (const reverse_iterTree<T>& lhs, const reverse_iterTree<T>& rhs){return lhs.base() == rhs.base();};
-	// template <class T>  bool operator!= (const reverse_iterTree<T>& lhs, const reverse_iterTree<T>& rhs){return lhs.base() != rhs.base();};
-	// template <class T>  bool operator<  (const reverse_iterTree<T>& lhs, const reverse_iterTree<T>& rhs){return lhs.base() < rhs.base();};
-	// template <class T>  bool operator<= (const reverse_iterTree<T>& lhs, const reverse_iterTree<T>& rhs){return lhs.base() <= rhs.base();};
-	// template <class T>  bool operator>  (const reverse_iterTree<T>& lhs, const reverse_iterTree<T>& rhs){return lhs.base() > rhs.base();};
-	// template <class T>  bool operator>= (const reverse_iterTree<T>& lhs, const reverse_iterTree<T>& rhs){return lhs.base() >= rhs.base();};
+	template <class Iterator>  bool operator== (const reverse_iterator_tree<Iterator>& lhs, const reverse_iterator_tree<Iterator>& rhs){return lhs.base() == rhs.base();};
+	template <class Iterator>  bool operator!= (const reverse_iterator_tree<Iterator>& lhs, const reverse_iterator_tree<Iterator>& rhs){return lhs.base() != rhs.base();};
+	template <class Iterator>  bool operator<  (const reverse_iterator_tree<Iterator>& lhs, const reverse_iterator_tree<Iterator>& rhs){return lhs.base() < rhs.base();};
+	template <class Iterator>  bool operator<= (const reverse_iterator_tree<Iterator>& lhs, const reverse_iterator_tree<Iterator>& rhs){return lhs.base() <= rhs.base();};
+	template <class Iterator>  bool operator>  (const reverse_iterator_tree<Iterator>& lhs, const reverse_iterator_tree<Iterator>& rhs){return lhs.base() > rhs.base();};
+	template <class Iterator>  bool operator>= (const reverse_iterator_tree<Iterator>& lhs, const reverse_iterator_tree<Iterator>& rhs){return lhs.base() >= rhs.base();};
 }
 
 #endif

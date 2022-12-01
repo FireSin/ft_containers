@@ -1,10 +1,7 @@
 #ifndef RBTREE_HPP
 #define RBTREE_HPP
 
-#include <functional>
-#include "iterator_tree.hpp"
-#include "pair.hpp"
-#include "algorithm.hpp"
+#include "containers.hpp"
 
 namespace ft{
 
@@ -60,8 +57,8 @@ namespace ft{
         typedef typename 	node_alloc::pointer							p_node;
 		typedef				ft::iterTree<node_type>						iterator;
 		typedef				ft::iterTree<const node_type>				const_iterator;
-		typedef				ft::reverse_iterator<iterator>				r_iterator;
-		typedef				ft::reverse_iterator<const_iterator>		const_r_iterator;
+		typedef				ft::reverse_iterator_tree<iterator>			r_iterator;
+		typedef				ft::reverse_iterator_tree<const_iterator>	const_r_iterator;
 
 		private:
 			p_node			_head;
@@ -89,7 +86,7 @@ namespace ft{
 				deleteNode(_nil);
 			}
 
-			p_node	initNil(){
+			const p_node	initNil(){
 			p_node nil = node_alloc().allocate(1);
             nil->_left = NULL;
             nil->_right = NULL;
@@ -108,13 +105,15 @@ namespace ft{
 			iterator end(){return iterator(_nil, _head);}
 
 			r_iterator rbegin(){return r_iterator(--end());}
-			r_iterator rend(){return r_iterator(end());}
+			r_iterator rend(){return r_iterator(--end());}
 
 			const_iterator cbegin() const{return const_iterator(const_treeMin(_head), _head);}
 			const_iterator cend() const{return const_iterator(_nil, _head);}
 
 			const_r_iterator const_rbegin() const{return const_r_iterator(--cend());}
-			const_r_iterator const_rend() const{return const_r_iterator(cend());}
+			const_r_iterator const_rend() const{return const_r_iterator(--cend());}
+
+			key_compare	comp()const{return _key_comp;}
 
 			p_node newNode(const value& val){
 				p_node newNode = _node_alloc.allocate(1);
@@ -133,6 +132,9 @@ namespace ft{
 			}
 
 			p_node treeMin(p_node node){
+				if (node == NULL || node == _nil){
+					return _nil;
+				}
 				while (node->_left != _nil){
 					node = node->_left;
 				}
@@ -140,21 +142,30 @@ namespace ft{
 			}
 
 			p_node treeMax(p_node node){
-				while (node->_right != _nil){
+				if (node == NULL || node == _nil){
+					return _nil;
+				}
+				while (node != _nil && node->_right != _nil){
 					node = node->_right;
 				}
 				return node;
 			}
 
 			const p_node const_treeMin(p_node node) const{
-				while (node->_left != _nil){
+				if (node == NULL || node == _nil){
+					return _nil;
+				}
+				while (node != _nil && node->_left != _nil){
 					node = node->_left;
 				}
 				return node;
 			}
 
 			const p_node const_treeMax(p_node node) const{
-				while (node->_right != _nil){
+				if (node == NULL || node == _nil){
+					return _nil;
+				}
+				while (node != _nil && node->_right != _nil){
 					node = node->_right;
 				}
 				return node;
@@ -293,43 +304,6 @@ namespace ft{
 					insert(i.base()->_value);
 				}
 			}
-
-			// void swapNode(p_node a, p_node b){
-			// 	std::swap(a->_color, b->_color);
-			// 	if (a->_left){
-			// 		a->_left->_parent = b;
-			// 	}
-			// 	if (b->_left){
-			// 		b->_left->_parent = a;
-			// 	}
-			// 	std::swap(a->_left, b->_left);
-			// 	if (a->_right){
-			// 		a->_right->_parent = b;
-			// 	}
-			// 	if (b->_right){
-			// 		b->_right->_parent = a;
-			// 	}
-			// 	std::swap(a->_right, b->_right);
-			// 	if (a->_parent){
-			// 		if (a->_parent->_left == a){
-			// 			a->_parent->_left = b;
-			// 		} else {
-			// 			a->_parent->_right = b;
-			// 		}
-			// 	} else {
-			// 		_head = b;
-			// 	}
-			// 	if (b->_parent){
-			// 		if (b->_parent->_left == b){
-			// 			b->_parent->_left = a;
-			// 		} else {
-			// 			b->_parent->_right = a;
-			// 		}
-			// 	} else{
-			// 		_head = a;
-			// 	}
-			// 	std::swap(a->_parent, b->_parent);
-			// }
 
 			void swap(rbTree &other){
 				std::swap(_head, other._head);
@@ -565,7 +539,7 @@ namespace ft{
 
 			void clear_tree(){
 				clear(_head);
-				_head = NULL;
+				_head = _nil;
 			}
 
 			p_node getHead(){
@@ -579,7 +553,6 @@ namespace ft{
 					std::cout <<"\033[0;36m"<< "nil" << "\033[0m"<<std::endl;
 					return ;
 				}
-				// print the value of the node
 				if (nodeV->_color == BLACK)
 					std::cout <<"\033[0;36m"<< nodeV->_value._first<<"\033[0m"<<std::endl;
 				else

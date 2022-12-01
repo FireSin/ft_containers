@@ -1,8 +1,7 @@
 #ifndef MAP_HPP
 #define MAP_HPP
 
-#include "rbTree.hpp"
-#include <exception>
+#include "containers.hpp"
 
 namespace ft{
 
@@ -28,29 +27,29 @@ namespace ft{
 					typedef     bool        result_type;
 					typedef     value_type  first_argument_type;
 					typedef     value_type  second_argument_type;
+
+					bool operator()( const value_type& lhs, const value_type& rhs ) const{
+						return comp(lhs._first, rhs._first);
+					};
 				protected:
 					Compare comp;
 					value_compare(): comp(Compare()){};
 					value_compare(Compare& c): comp(c){};
-					bool operator()( const value_type& lhs, const value_type& rhs ) const{
-						return comp(lhs._first, rhs._first);
-					};
 			};
 			
 			typedef typename		Allocator::template rebind<ft::Node<value_type> >::other		node_allocator_type;
 			typedef					ft::rbTree<value_type, value_compare, node_allocator_type>		rbtree;
 			typedef typename		rbtree::iterator												iterator;
 			typedef typename		rbtree::const_iterator											const_iterator;
-			typedef typename		rbtree::r_iterator												rev_iterator;
-			typedef typename		rbtree::const_r_iterator										const_rev_iterator;
+			typedef typename		rbtree::r_iterator												reverse_iterator;
+			typedef typename		rbtree::const_r_iterator										const_reverse_iterator;
         private:
             rbtree      	_data;
             allocator_type  _alloc;
             key_compare     _compare;
-            value_compare   _val_compare;
 
         public:
-            explicit map(const Compare& comp = key_compare(), const Allocator& alloc = Allocator()): _data(), _alloc(alloc), _compare(comp), _val_compare(value_compare()){};
+            explicit map(const key_compare& comp = key_compare(), const Allocator& alloc = Allocator()): _data(), _alloc(alloc), _compare(comp){};
             template<class InputIt>
             map(InputIt first, InputIt last, const Compare& comp = Compare(), const Allocator& alloc = Allocator()){
                 _data.insert(first, last);
@@ -58,7 +57,7 @@ namespace ft{
             map(const map& other){*this = other;};
             ~map(){};
             
-			rbtree&   operator=(const map& other){
+			map&   operator=(const map& other){
 				this->_data = other._data;
 				return *this;
 			}
@@ -67,13 +66,13 @@ namespace ft{
 			iterator					begin(){return _data.begin();}
 			const_iterator				cend() const{return _data.cend();}
 			const_iterator				cbegin() const{return _data.cbegin();}
-			rev_iterator 				rbegin(){return _data.rbegin();}
-			rev_iterator 				rend(){return _data.rend();}
-			const_rev_iterator			const_rbegin() const{return _data.const_rbegin();}
-			const_rev_iterator			const_rend() const{return _data.const_rend();}
+			reverse_iterator 			rbegin(){return _data.rbegin();}
+			reverse_iterator 			rend(){return _data.rend();}
+			const_reverse_iterator		const_rbegin() const{return _data.const_rbegin();}
+			const_reverse_iterator		const_rend() const{return _data.const_rend();}
 
             allocator_type 				get_allocator() const{return _alloc;}
-			size_type					size() const{return _data._size;}
+			size_type					size() const{return _data.size();}
 			bool						empty() const{return _data.empty();}
 			size_type					max_size() const{return _data.max_size();}
 			void						clear(){_data.clear_tree();}
@@ -84,7 +83,6 @@ namespace ft{
 				_data.swap(other._data);
 				std::swap(_alloc, other._alloc);
 				std::swap(_compare, other._compare);
-				std::swap(_val_compare, other._val_compare);
 			}
 			iterator 					find(const key_type& key){return _data.find(value_type(key, T()));}
 			const_iterator 				find(const key_type& key) const{return _data.find(value_type(key, T()));}
@@ -130,8 +128,8 @@ namespace ft{
 			iterator										upper_bound(const Key& key){return _data.upper_bound(value_type(key, T()));}
 			const_iterator									upper_bound(const Key& key)const{return _data.upper_bound(value_type(key, T()));};
 
-			key_compare 			key_comp() const{return _compare;}
-			value_compare			value_comp() const{return _val_compare;};
+			key_compare 			key_comp(){return Compare();}
+			value_compare			value_comp(){return value_compare(_compare);};
 
 
 			void printTree(){

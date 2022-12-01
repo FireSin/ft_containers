@@ -1,8 +1,7 @@
 #ifndef SET_HPP
 #define SET_HPP
 
-#include "rbTree.hpp"
-#include <exception>
+#include "containers.hpp"
 
 namespace ft{
 
@@ -25,16 +24,15 @@ namespace ft{
 			typedef					ft::rbTree<value_type, value_compare, node_allocator_type>		rbtree;
 			typedef typename		rbtree::iterator												iterator;
 			typedef typename		rbtree::const_iterator											const_iterator;
-			typedef typename		rbtree::r_iterator												rev_iterator;
-			typedef typename		rbtree::const_r_iterator										const_rev_iterator;
+			typedef typename		rbtree::r_iterator												reverse_iterator;
+			typedef typename		rbtree::const_r_iterator										const_reverse_iterator;
         private:
             rbtree      	_data;
             allocator_type  _alloc;
             key_compare     _compare;
-            value_compare   _val_compare;
 
         public:
-            explicit set(const Compare& comp = key_compare(), const Allocator& alloc = Allocator()): _data(), _alloc(alloc), _compare(comp), _val_compare(value_compare()){};
+            explicit set(const key_compare& comp = key_compare(), const Allocator& alloc = Allocator()): _data(), _alloc(alloc), _compare(comp){};
             template<class InputIt>
             set(InputIt first, InputIt last, const Compare& comp = Compare(), const Allocator& alloc = Allocator()){
                 _data.insert(first, last);
@@ -42,7 +40,7 @@ namespace ft{
             set(const set& other){*this = other;};
             ~set(){};
             
-			rbtree&   operator=(const set& other){
+			set&   operator=(const set& other){
 				this->_data = other._data;
 				return *this;
 			}
@@ -51,13 +49,13 @@ namespace ft{
 			iterator					begin(){return _data.begin();}
 			const_iterator				cend() const{return _data.cend();}
 			const_iterator				cbegin() const{return _data.cbegin();}
-			rev_iterator 				rbegin(){return _data.rbegin();}
-			rev_iterator 				rend(){return _data.rend();}
-			const_rev_iterator			const_rbegin() const{return _data.const_rbegin();}
-			const_rev_iterator			const_rend() const{return _data.const_rend();}
+			reverse_iterator 				rbegin(){return _data.rbegin();}
+			reverse_iterator 				rend(){return _data.rend();}
+			const_reverse_iterator			const_rbegin() const{return _data.const_rbegin();}
+			const_reverse_iterator			const_rend() const{return _data.const_rend();}
 
             allocator_type 				get_allocator() const{return _alloc;}
-			size_type					size() const{return _data._size;}
+			size_type					size() const{return _data.size();}
 			bool						empty() const{return _data.empty();}
 			size_type					max_size() const{return _data.max_size();}
 			void						clear(){_data.clear_tree();}
@@ -68,7 +66,6 @@ namespace ft{
 				_data.swap(other._data);
 				std::swap(_alloc, other._alloc);
 				std::swap(_compare, other._compare);
-				std::swap(_val_compare, other._val_compare);
 			}
 			iterator 					find(const key_type& key){return _data.find(key);}
 			const_iterator 				find(const key_type& key) const{return _data.find(key);}
@@ -106,13 +103,9 @@ namespace ft{
 			iterator										upper_bound(const Key& key){return _data.upper_bound(key);}
 			const_iterator									upper_bound(const Key& key)const{return _data.upper_bound(key);};
 
-			key_compare 			key_comp() const{return _compare;}
-			value_compare			value_comp() const{return _val_compare;};
+			key_compare 			key_comp() const{return Compare();}
+			value_compare			value_comp() const{return Compare();};
 
-
-			void printTree(){
-				_data.printBT("ft", _data.getHead(), false);
-			}
 			template<class _Key, class _Compare, class _Alloc>
 			friend bool operator==(const set<_Key, _Compare, _Alloc> & lhs,	const set<_Key, _Compare, _Alloc>& rhs);
 
